@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel = "stylesheet" href = "/css/style.css">
+    <meta charset="UTF-8">
+    <title>MIPT campus map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+<body>
+<div id="map" >
+</div>
+<div class="menu-button" id="menu-button-search"></div>
+<div class="menu-button" id="menu-button-increase-scale"></div>
+<div class="menu-button" id="menu-button-decrease-scale"></div>
+
+<div id="floor-map-container">
+    <div id="floor-list">
+        <p>Этаж 1</p>
+        <p>Этаж 2</p>
+        <p>Этаж 3</p>
+        <p>Этаж 4</p>
+    </div>
+    <div id="floor-title">Главный корпус</div>
+    <div id="floor-map">
+    </div>
+    <div id="floor-close"></div>
+</div>
+
+<div id="search-container">
+    <div id="search-input-container">
+        <input id="search-input-text" type="text" placeholder="Поиск"/>
+        <input id="search-input-submit" type="button" value=""/>
+    </div>
+    <div id="search-all-results-container">
+        <div id="search-full-list-container">
+            <div id="search-left-col">
+                <div id="search-other" class="search-column">
+                    <div class="search-column-h">Управление и службы института</div>
+                </div>
+            </div>
+            <div id="search-mid-col">
+                <div id="search-deans" class="search-column">
+                    <div class="search-column-h">Факультеты</div>
+                </div>
+                <div id="search-units" class="search-column">
+                    <div class="search-column-h">Отделы и центры</div>
+                </div>
+            </div>
+            <div id="search-right-col">
+                <div id="search-chairs" class="search-column">
+                    <div class="search-column-h">Кафедры и лаборатории</div>
+                </div>
+            </div>
+        </div>
+        <div id="search-list-container">
+            <div id="search-list-staff" class="search-column">
+                <div class="search-column-h">Сотрудники</div>
+            </div>
+            <div id="search-list-divisions" class="search-column">
+                <div class="search-column-h">Подразделения</div>
+            </div>
+        </div>
+    </div>
+    <div id="search-close"></div>
+</div>
+
+<script defer type="text/javascript" src="/js/jquery-3.2.1.min.js"></script>
+<script defer type="text/javascript" src="/js/map.js"></script>
+<script defer type="text/javascript" src="/js/navigation.js"></script>
+<script defer type="text/javascript" src="/js/main.js"></script>
+</body>
+</html>
