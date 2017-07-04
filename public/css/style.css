@@ -1,16 +1,16 @@
 @font-face {
     font-family: HelveticaNeueItalic; /* Гарнитура шрифта */
-    src: url(/img/HelveticaNeueCyr-UltraLightItalic.otf); /* Путь к файлу со шрифтом */
+    src: url(/fonts/HelveticaNeueCyr-UltraLightItalic.otf); /* Путь к файлу со шрифтом */
 }
 
 @font-face{
     font-family: HelveticaBold;
-    src:  url(/img/HelveticaBold.otf);
+    src:  url(/fonts/HelveticaBold.otf);
 }
 
 @font-face{
     font-family: HelveticaNeueRoman;
-    src:  url(/img/HelveticaNeueRoman.otf);
+    src:  url(/fonts/HelveticaNeueRoman.otf);
 }
 
 *{

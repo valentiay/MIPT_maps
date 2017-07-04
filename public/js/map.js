@@ -3,7 +3,7 @@
 function map(container, mapId) {
     /** Инициализация и обновление карты */
     // Ссылка на блок с картой
-    var _container = $(container);
+    var _container = container;
     // Загруженная информация по карте
     var _mapInfo;
 
@@ -43,39 +43,27 @@ function map(container, mapId) {
         return _mapInfo;
     }
 
-    function renderMap(data) {
+    function renderMap(data, width, height) {
+        _container.html("");
         _mapInfo = data;
         var mapBlock = document.createElement("div");
         mapBlock.className = "map-block";
-        mapBlock.className = "map-block";
         _container.get(0).appendChild(mapBlock);
         $(mapBlock).css("background-image", 'url(' + _mapInfo.mapSRC + ')');
-
+        _container.data("isActive", false);
+        MAX_X = width;
+        MAX_Y = height;
+        if (MAX_X / MAX_Y < _container.width() / _container.height()) {
+            $(mapBlock).css("width", "100%");
+            $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
+            MAGIC_RATIO = MAX_X / _container.width();
+        }
+        else {
+            $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
+            $(mapBlock).css("height", "100%");
+            MAGIC_RATIO = MAX_Y / _container.height();
+        }
         _container.data("isActive", true);
-
-        _container.ready(function() {
-            var img = new Image;
-            img.src = _mapInfo.mapSRC;
-            _container.data("isActive", false);
-            $(img).on("load", function () {
-                MAX_X = img.width;
-                MAX_Y = img.height;
-                if (MAX_X / MAX_Y < _container.width() / _container.height()) {
-                    $(mapBlock).css("width", "100%");
-                    $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
-                    MAGIC_RATIO = MAX_X / _container.width();
-                }
-                else {
-                    $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
-                    $(mapBlock).css("height", "100%");
-                    MAGIC_RATIO = MAX_Y / _container.height();
-                }
-                _container.data("isActive", true);
-                if (_mapInfo.mapID === 0)
-                    increaseScale();
-                _container.trigger('load');
-            });
-        });
     }
 
     /** Функции для работы с координатами */
@@ -463,8 +451,6 @@ function map(container, mapId) {
         locateEmployeeBuilding: locateEmployeeBuilding,
         locateEmployeeCabinet: locateEmployeeCabinet,
         loadMap: loadMap,
-        getMapInfo: function() {
-            return _mapInfo;
-        }
+        renderMap: renderMap
     }
 }
