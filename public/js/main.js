@@ -2,6 +2,7 @@
 
 var mainContainer = $('#map');
 var main = map(mainContainer, 0);
+
 $.ajax('/getMap', {
     type: "GET",
     data: {"mapID": 0},
@@ -22,6 +23,10 @@ $('#menu-button-increase-scale').click(main.increaseScale);
 $('#menu-button-decrease-scale').click(main.decreaseScale);
 
 
+
+var floorMapContainer = $('#floor-map');
+var floorMap = map(floorMapContainer, 0);
+floorMap.deactivate();
 
 function renderFloorList(data) {
     var floorList = $('#floor-list');
@@ -45,11 +50,30 @@ function loadFloorMap(id) {
         success: function(data) {
             var img = new Image;
             img.src = data.mapSRC;
+            console.log($(document.body).width());
+            var MAX_FLOOR_MAP_WIDTH = $(document.body).width() - 170;
+            var MAX_FLOOR_MAP_HEIGHT = $(document.body).height() - 40;
             $(img).on("load", function () {
+                renderFloorList(data);
                 var width = img.width;
                 var height = img.height;
+                var floorTitle = $('#floor-title');
+                var floorMapBlock = $('#floor-map-container');
+                floorMapBlock.css("margin-top", 0);
+                floorMapBlock.css("margin-left", 0);
+                if (width / height < MAX_FLOOR_MAP_WIDTH / MAX_FLOOR_MAP_HEIGHT) {
+                    floorTitle.css("width", MAX_FLOOR_MAP_HEIGHT / height * width - 80 + 'px');
+                    floorTitle.css("width", (MAX_FLOOR_MAP_HEIGHT - floorTitle.height()) / height * width - 80 + 'px');
+                    floorMapContainer.css("height", MAX_FLOOR_MAP_HEIGHT - floorTitle.height() + 'px');
+                    floorMapContainer.css("width", (MAX_FLOOR_MAP_HEIGHT - floorTitle.height()) / height * width + 'px');
+                } else {
+                    floorTitle.css("width", MAX_FLOOR_MAP_WIDTH - 80 + 'px');
+                    floorMapContainer.css("width", MAX_FLOOR_MAP_WIDTH + 'px');
+                    floorMapContainer.css("height", MAX_FLOOR_MAP_WIDTH / width * height - floorTitle.height() + 'px');
+                }
+                floorMapBlock.css("margin-top", ($(document.body).height() - floorMapBlock.height()) / 2 + 'px');
+                floorMapBlock.css("margin-left", ($(document.body).width() - floorMapBlock.width()) / 2 + 'px');
                 floorMap.renderMap(data, width, height);
-                renderFloorList(data);
                 $('#floor-map').trigger('floor-map-ready');
             });
         }
@@ -62,8 +86,6 @@ function activateFloorMap() {
     floorMap.activate();
 }
 
-var floorMap = map($('#floor-map'), 0);
-floorMap.deactivate();
 
 $('#floor-list').on('click', 'p', function(event) {
     event.stopPropagation();

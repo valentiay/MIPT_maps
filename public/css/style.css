@@ -148,10 +148,8 @@ body{
 #floor-map-container{
     visibility: hidden;
     position: absolute;
-    top: 1%;
-    left: 1%;
-    width: 98%;
-    height: 98%;
+    top: 0;
+    left: 0;
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 10000000;
 }
@@ -190,9 +188,9 @@ body{
 
 #floor-title{
     float: left;
-    margin: 10px;
+    margin: 10px 50px;
     width: calc(100% - 160px);
-    height: 30px;
+    min-height: 30px;
     text-align: center;
     font-size: 25px;
     color: #FFFFFF;
@@ -204,7 +202,7 @@ body{
     top: 0;
     left: 0;
     overflow: hidden;
-    margin: 0 10px 30px 10px;
+    margin: 0 10px 10px 10px;
     width: calc(100% - 160px);
     height: calc(100% - 80px);
     background-size: contain;
@@ -273,7 +271,7 @@ body{
     height: 38px;
     background-color: transparent;
     font-size: 30px;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     font-weight: bold;
     color: #FFFFFF;
 }
@@ -370,7 +368,7 @@ body{
     min-height: 20px;
     font-size: 14px;
     line-height: 19px;
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     color: #0AC8FA;
     cursor: pointer;
 }

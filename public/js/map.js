@@ -57,8 +57,7 @@ function map(container, mapId) {
             $(mapBlock).css("width", "100%");
             $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
             MAGIC_RATIO = MAX_X / _container.width();
-        }
-        else {
+        } else {
             $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
             $(mapBlock).css("height", "100%");
             MAGIC_RATIO = MAX_Y / _container.height();
@@ -331,8 +330,7 @@ function map(container, mapId) {
         if (event === undefined) {
             x = _container.width() / 2;
             y = _container.height() / 2;
-        }
-        else {
+        } else {
             x = event.pageX - _container.offset().left;
             y = event.pageY - _container.offset().top;
         }
@@ -349,8 +347,7 @@ function map(container, mapId) {
         if (event === undefined) {
             x = _container.width() / 2;
             y = _container.height() / 2;
-        }
-        else {
+        } else {
             x = event.pageX - _container.offset().left;
             y = event.pageY - _container.offset().top;
         }
@@ -436,7 +433,6 @@ function map(container, mapId) {
     _container.mouseup(moveInterruption);
     _container.dblclick(moveInterruption);
     _container.click(moveInterruption);
-    _container.mouseleave(moveInterruption);
 
 
     return {
