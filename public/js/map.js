@@ -1,6 +1,6 @@
 "use strict";
 
-function map(container, mapId) {
+function map(container) {
     /** Инициализация и обновление карты */
     // Ссылка на блок с картой
     var _container = container;
@@ -18,32 +18,39 @@ function map(container, mapId) {
 
     var MAGIC_RATIO;
 
-    var ARROW_SIZE = 28;
+    var ARROW_SIZE = ($(document.body).width() > 800)?28:6;
 
-    // Флаг для блокировки открытия информации об объекте при перетаскивании
-    var _blockClick = false;
-    // Timeout для предотвращения открытия информации об объекте при двойном клике
-    var _clickDelay = 0;
+    function correctMap() {
+        var mapBlock = _container.children('.map-block');
+        if (MAX_X / MAX_Y > _container.width() / _container.height()) {
+            $(mapBlock).css("width", "100%");
+            $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
+            _container.css("margin-left", "0");
+            _container.css("margin-top", ($(document.body).height() - $(mapBlock).height()) / 2 + 'px');
+            MAGIC_RATIO = MAX_X / _container.width();
+        } else {
+            $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
+            $(mapBlock).css("height", "100%");
+            _container.css("margin-top", "0");
+            _container.css("margin-left", ($(document.body).width() - $(mapBlock).width()) / 2 + 'px');
+            MAGIC_RATIO = MAX_Y / _container.height();
+        }
 
-    loadMap(mapId);
+        var i;
+        var points = $('.point');
+        for (i = 0; i < points.length; i++) {
+            setPointPosition($(points[i]));
+        }
 
-    function loadMap(mapId) {
-        _scale = 1;
-        _originX = 0;
-        _originY = 0;
-        _container.html("");
-
-        $.ajax('/getMap', {
-            type: "GET",
-            data: {"mapID": mapId},
-            dataType: "json",
-            success: renderMap
-        });
-
-        return _mapInfo;
+        var pointers = $('.pointer-container');
+        for (i = 0; i < pointers.length; i++) {
+            setPointerPosition($(pointers[i]));
+        }
     }
 
-    function renderMap(data, width, height) {
+    $(window).resize(correctMap);
+
+    function renderMap(data, width, height, pointsData) {
         _container.html("");
         _mapInfo = data;
         var mapBlock = document.createElement("div");
@@ -53,16 +60,65 @@ function map(container, mapId) {
         _container.data("isActive", false);
         MAX_X = width;
         MAX_Y = height;
-        if (MAX_X / MAX_Y < _container.width() / _container.height()) {
-            $(mapBlock).css("width", "100%");
-            $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
-            MAGIC_RATIO = MAX_X / _container.width();
-        } else {
-            $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
-            $(mapBlock).css("height", "100%");
-            MAGIC_RATIO = MAX_Y / _container.height();
-        }
+        correctMap();
         _container.data("isActive", true);
+        for (var i = 0; i < pointsData.data.length; i++) {
+            createPoint(pointsData.data[i]);
+        }
+    }
+
+    _container.click(function(event) {
+        console.log(toCords(event.pageX - _container.offset().left, event.pageY - _container.offset().top));
+    });
+
+    /** Функции для работы с точками */
+
+    function createPoint(pointData) {
+        var pointDiv = document.createElement("div");
+        pointDiv.className = "point";
+        $(pointDiv).data('x-cord', pointData.x);
+        $(pointDiv).data('y-cord', pointData.y);
+        $(pointDiv).data('title', pointData.title);
+        $(_container).get(0).appendChild(pointDiv);
+        setPointPosition($(pointDiv));
+
+        $(pointDiv).click(function(event) {
+            var point = $(event.target);
+            var pointer = createBasePointer(point.data('x-cord'), point.data('y-cord'), point.data('title'));
+            point.css("background-color", "#005892");
+            appendWithCross(pointer);
+
+            $(pointer).on('click', '.pointer-close', function () {
+                point.css("background-color", "#9c0a09");
+            });
+        });
+
+        // $(pointDiv).mouseenter(function(event) {
+        //     var point = $(event.target);
+        //     point.animate({width: "16px", height: "16px", borderRadius: "8px", top: "-=3px", left: "-=3px"}, 200);
+        // });
+        //
+        // $(pointDiv).mouseleave(function(event) {
+        //     var point = $(event.target);
+        //     point.animate({width: "10px", height: "10px", borderRadius: "5px", top: "+=3px", left: "+=3px"}, 200);
+        // });
+    }
+
+    function setPointPosition(point) {
+        if (!_container.data("isActive"))
+            return;
+        var xCord = point.data('x-cord');
+        var yCord = point.data('y-cord');
+        var objPx = toPx(xCord, yCord);
+
+        var pointX;
+        var pointY;
+
+        pointX = objPx.x - point.width() / 2;
+        pointY = objPx.y - point.height() / 2;
+
+        point.css("left", pointX + 'px');
+        point.css("top", pointY + 'px');
     }
 
     /** Функции для работы с координатами */
@@ -140,313 +196,7 @@ function map(container, mapId) {
         menuContainer.appendChild(menuClose);
     }
 
-    function appendWithLocator(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-locate";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    function appendWithPhotos(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-photos";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    function appendWithInsideMap(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-inside-map";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    /** Обработка клика по карте */
-
-    function processClick(event) {
-        if (!_container.data("isActive"))
-            return;
-        if (_blockClick)
-            return;
-        if (!_clickDelay) _clickDelay = setTimeout(function () {
-            clearTimeout(_clickDelay);
-            _clickDelay = 0;
-
-            var cords = toCords(event.pageX - $(_container).offset().left,
-                event.pageY - $(_container).offset().top);
-
-            for (var i = 0; i < _mapInfo.objects.length; i++) {
-                var v = _mapInfo.objects[i].vertices;
-                var intersections = 0;
-                if ((v[0].y - cords.y)*(v[v.length - 1].y - cords.y) < 0
-                    && (v[0].y - v[v.length - 1].y !== 0
-                    && v[0].x + (v[0].x - v[v.length - 1].x) * (v[0].y - cords.y) / (v[0].y - v[v.length - 1].y) > cords.x
-                    || v[0].y - v[v.length - 1].y === 0 && v[0].x > cords.x))
-                    intersections++;
-                for (var j = 1; j < v.length; j++) {
-                    if (cords.x < v[j].x && (v[j].y - cords.y) * (v[j - 1].y - cords.y) < 0
-                        && (v[j].y - v[j - 1].y !== 0
-                        && v[j].x + (v[j].x - v[j - 1].x) * (v[j].y - cords.y) / (v[j].y - v[j - 1].y) > cords.x
-                        || v[j].y - v[j - 1].y === 0 && v[j].x > cords.x))
-                        intersections++;
-                }
-                if (intersections % 2 === 1) {
-                    locateBuilding(_mapInfo.objects[i]);
-                    return;
-                }
-            }
-        }, 200);
-    }
-
-    // Обработчики
-    _container.click(processClick);
-
-    /** Создание указателей на точку по запросу из навигационного меню */
-
-    function getObjectById(objectId) {
-        var object;
-        for (var i = 0; i < _mapInfo.objects.length; i++) {
-            if (_mapInfo.objects[i].objID === objectId) {
-                object = _mapInfo.objects[i];
-                break;
-            }
-        }
-        if (object === undefined) {
-            console.error('Wrong object ID');
-        }
-        return object;
-    }
-
-    function getAvgObjectCords(object) {
-        var x = 0, y = 0, i;
-        for (i = 0; i < object.vertices.length; i++) {
-            x += object.vertices[i].x;
-            y += object.vertices[i].y;
-        }
-        x /= object.vertices.length;
-        y /= object.vertices.length;
-        var ans = {};
-        ans.x = x;
-        ans.y = y;
-        return ans;
-    }
-
-    function locateBuilding(object) {
-        var avgCords = getAvgObjectCords(object);
-        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
-        if (object.mapID !== null) {
-            appendWithInsideMap(pointer);
-            $(pointer).data("mapID", object.mapID);
-            appendWithPhotos(pointer);
-        }
-        appendWithCross(pointer);
-    }
-
-    function locateEmployeeBuilding(location, staffInfo) {
-        var object = getObjectById(location.buildingID);
-        var cords = getAvgObjectCords(object);
-
-        // Создание окна здания
-        var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + ' <b>'
-            + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-            + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-        $(pointer).data('mapID', location.mapID);
-        appendWithLocator(pointer);
-        appendWithCross(pointer);
-        $(pointer).data('mapID', location.mapID);
-        $(pointer).data('cabinetID', location.cabinetID);
-        $(pointer).data('staffInfo', staffInfo);
-
-        var px = toPx(cords.x, cords.y);
-        var dx = px.x - _container.width() / 2;
-        var dy = px.y - _container.height() / 2;
-        if (_originX + dx < 0)
-            dx = -_originX;
-        if (_originY + dy < 0)
-            dy = -_originY;
-        var newCornerCords = toCords(_container.width() + dx, _container.height() + dy);
-        if (newCornerCords.x > MAX_X)
-            dx = toPx(MAX_X, MAX_Y).x - _container.width();
-        if (newCornerCords.y > MAX_Y)
-            dy = toPx(MAX_X, MAX_Y).y - _container.height();
-
-        changePosition(dx, dy);
-    }
-
-    function locateEmployeeCabinet(cabinetID, staffInfo) {
-        var object = getObjectById(cabinetID);
-        var cords = getAvgObjectCords(object);
-
-        var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + ' <b>'
-            + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-            + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-        $(pointer).data('mapID', location.mapID);
-        appendWithCross(pointer);
-        $(pointer).data('mapID', location.mapID);
-        $(pointer).data('cabinetID', location.cabinetID);
-        $(pointer).data('staffInfo', staffInfo);
-    }
-
-    /** Масштабирование */
-
-    // Изменяет масштаб в ratio раз
-    function changeScale(clickX, clickY, ratio) {
-        if (!_container.data("isActive"))
-            return;
-        clearTimeout(_clickDelay);
-        _clickDelay = 0;
-        _scale *= ratio;
-
-        var blocks = _container.children('.map-block');
-        for (var i = 0; i < blocks.length; i++) {
-            var oldW = $(blocks[i]).width();
-            var oldH = $(blocks[i]).height();
-            $(blocks[i]).css("width", oldW * ratio + 'px');
-            $(blocks[i]).css("height", oldH * ratio + 'px');
-        }
-
-        var clickCords = toCords(clickX, clickY, _scale / ratio);
-        var newClickPx = toPx(clickCords.x, clickCords.y, _scale);
-        var dx = newClickPx.x - clickX;
-        var dy = newClickPx.y - clickY;
-        if (_originX + dx < 0)
-            dx = -_originX;
-        if (_originY + dy < 0)
-            dy = -_originY;
-
-        var newCornerCords = toCords(_container.width() + dx, _container.height() + dy);
-        if (newCornerCords.x > MAX_X)
-            dx = toPx(MAX_X, MAX_Y).x - _container.width();
-        if (newCornerCords.y > MAX_Y)
-            dy = toPx(MAX_X, MAX_Y).y - _container.height();
-
-        changePosition(dx, dy);
-    }
-
-    // Увеличение масштаба
-    function increaseScale(event) {
-        if (!_container.data("isActive"))
-            return;
-        if (_scale * 1.5 > 5)
-            return;
-        var x, y;
-        if (event === undefined) {
-            x = _container.width() / 2;
-            y = _container.height() / 2;
-        } else {
-            x = event.pageX - _container.offset().left;
-            y = event.pageY - _container.offset().top;
-        }
-        changeScale(x, y, 1.5);
-    }
-
-    // Уменьшение масштаба
-    function decreaseScale(event) {
-        if (!_container.data("isActive"))
-            return;
-        if (_scale / 1.5 < 1)
-            return;
-        var x, y;
-        if (event === undefined) {
-            x = _container.width() / 2;
-            y = _container.height() / 2;
-        } else {
-            x = event.pageX - _container.offset().left;
-            y = event.pageY - _container.offset().top;
-        }
-        changeScale(x, y, 1 / 1.5);
-    }
-
-    // Обработчики
-    _container.dblclick(increaseScale);
-
-    /** Перетаскивание */
-
-    // Смещает положение карты на (dx, dy) в пикселях
-    function changePosition(dx, dy) {
-        if (!_container.data("isActive"))
-            return;
-        _originX += dx;
-        _originY += dy;
-        var blocks = _container.children('.map-block');
-        for (var i = 0; i < blocks.length; i++) {
-            var x = $(blocks[i]).css("left").split('px')[0];
-            var y = $(blocks[i]).css("top").split('px')[0];
-            $(blocks[i]).css("left", x - dx);
-            $(blocks[i]).css("top", y - dy);
-        }
-
-        var pointMenus = _container.children('.pointer-container');
-        for (i = 0; i < pointMenus.length; i++)
-            setPointerPosition($(pointMenus[i]));
-    }
-
-    // Координаты мыши после предыдущего смещения
-    var oldX;
-    var oldY;
-
-    // Функция для смещения карты при движении мыши
-    function moveProcessing(event) {
-        if (!_container.data("isActive"))
-            return;
-        _blockClick = true;
-        clearTimeout(_clickDelay);
-        _clickDelay = 0;
-
-        var clickX = event.pageX;
-        var clickY = event.pageY;
-        var dx = oldX - clickX;
-        var dy = oldY - clickY;
-
-        var newOriginCords = toCords(dx, dy);
-        var newCornerCords = toCords(_container.width() + dx, _container.height() + dy);
-        if (newOriginCords.x < 0 || newCornerCords.x > MAX_X)
-            dx = 0;
-        if (newOriginCords.y < 0 || newCornerCords.y > MAX_Y)
-            dy = 0;
-
-        changePosition(dx, dy);
-
-        oldX = clickX;
-        oldY = clickY;
-    }
-
-    // Обработчик события нажатия кнопки
-    _container.mousedown(function (event) {
-        if (!_container.data("isActive"))
-            return;
-        oldX = event.pageX;
-        oldY = event.pageY;
-        // Включение обработки перемещения мыши
-        _container.on('mousemove', moveProcessing);
-    });
-
-
-    // Функция для выключения обработки перемещения мыши
-    function moveInterruption() {
-        if (!_container.data("isActive"))
-            return;
-        setTimeout(function () {
-            _blockClick = false
-        }, 100);
-        _container.off('mousemove');
-    }
-
-    // Обработчики событий
-    _container.mouseup(moveInterruption);
-    _container.dblclick(moveInterruption);
-    _container.click(moveInterruption);
-
-
     return {
-        activate: function() {
-            _container.data("isActive", true);
-        },
-        deactivate: function() {
-            _container.data("isActive", false);
-        },
-        increaseScale: increaseScale,
-        decreaseScale: decreaseScale,
-        locateEmployeeBuilding: locateEmployeeBuilding,
-        locateEmployeeCabinet: locateEmployeeCabinet,
-        loadMap: loadMap,
         renderMap: renderMap
     }
 }
