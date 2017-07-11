@@ -5,7 +5,7 @@ function searcher() {
     var _departments;
     var _staff;
 
-    $.ajax('/phonebook/', {
+    $.ajax('/phonebook', {
         type: "GET",
         data: {fid:''},
         dataType: "json",

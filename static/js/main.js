@@ -126,7 +126,7 @@ var search = searcher();
 $('#menu-button-search').click(search.showNavigationMenu);
 $('#search-container').on('click', '.search-employee-locate', function () {
     var employeeID = $(event.target).data("id");
-    $.ajax('/phonebook/', {
+    $.ajax('/phonebook', {
         type: "GET",
         data: {"rid" : employeeID},
         dataType: "json",

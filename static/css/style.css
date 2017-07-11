@@ -1,16 +1,16 @@
 @font-face {
     font-family: HelveticaNeueItalic; /* Гарнитура шрифта */
-    src: url(/fonts/HelveticaNeueCyr-UltraLightItalic.otf); /* Путь к файлу со шрифтом */
+    src: url(/static/fonts/HelveticaNeueCyr-UltraLightItalic.otf); /* Путь к файлу со шрифтом */
 }
 
 @font-face{
     font-family: HelveticaBold;
-    src:  url(/fonts/HelveticaBold.otf);
+    src:  url(/static/fonts/HelveticaBold.otf);
 }
 
 @font-face{
     font-family: HelveticaNeueRoman;
-    src:  url(/fonts/HelveticaNeueRoman.otf);
+    src:  url(/static/fonts/HelveticaNeueRoman.otf);
 }
 
 *{
@@ -56,25 +56,25 @@ body{
 #menu-button-search{
     top: 0;
     left: 0;
-    background-image: url(/img/search.png);
+    background-image: url(/static/img/search.png);
 }
 
 #menu-button-increase-scale{
     top: 80px;
     left: 0;
-    background-image: url(/img/ZoomIn.png);
+    background-image: url(/static/img/ZoomIn.png);
 }
 
 #menu-button-decrease-scale{
     top: 145px;
     left: 0;
-    background-image: url(/img/ZoomOut.png);
+    background-image: url(/static/img/ZoomOut.png);
 }
 
 #menu-button-close{
     top: 0;
     right: 0;
-    background-image: url(/img/cross.png);
+    background-image: url(/static/img/cross.png);
 }
 
 /* Object information menus */
@@ -128,19 +128,19 @@ body{
 }
 
 .pointer-inside-map{
-    background-image: url('/img/object-info-inside-map.jpeg');
+    background-image: url(/static/img/object-info-inside-map.jpeg);
 }
 
 .pointer-photos{
-    background-image: url('/img/object-info-photos.jpeg');
+    background-image: url(/static/img/object-info-photos.jpeg);
 }
 
 .pointer-locate{
-    background-image: url('/img/object-info-locate.jpeg');
+    background-image: url(/static/img/object-info-locate.jpeg);
 }
 
 .pointer-close{
-    background-image: url(/img/object-info-close.jpeg);
+    background-image: url(/static/img/object-info-close.jpeg);
 }
 
 /* Detailed map styles */
@@ -216,7 +216,7 @@ body{
     width: 50px;
     height: 50px;
     background-size: cover;
-    background-image: url(/img/cross.png);
+    background-image: url(/static/img/cross.png);
     background-position: center;
     cursor: pointer;
 }
@@ -257,7 +257,7 @@ body{
     width: 60px;
     height: 60px;
     background-size: cover;
-    background-image: url(/img/cross.png);
+    background-image: url(/static/img/cross.png);
     background-position: center;
     cursor: pointer;
 }
@@ -293,7 +293,7 @@ body{
     padding: 0;
     width: 49px;
     height: 49px;
-    background-image: url(/img/cross.png);
+    background-image: url(/static/img/cross.png);
     background-color: transparent;
     background-size: cover;
     cursor: pointer;
@@ -404,7 +404,7 @@ body{
     width: 40px;
     height: 30px;
     background-size: cover;
-    background-image: url('/img/object-info-locate.jpeg');
+    background-image: url(/static/img/object-info-locate.jpeg);
     background-position: center;
     cursor: pointer;
 }
