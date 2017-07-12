@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import json
+
 from django.db import models
 
 from maps.models.Object import Object
@@ -7,45 +9,52 @@ from maps.models.Object import Object
 
 class Map(models.Model):
     title = models.CharField(max_length=200)
-    floor = models.IntegerField()
-    object = models.ForeignKey(Object)
-    map_src = models.CharField(max_length=200)
+    floor = models.IntegerField(blank=True, null=True)
+    src = models.CharField(max_length=200)
+    object = models.ForeignKey(Object, related_name="floor_maps")
 
-    def get_map_response(self):
-        return MapResponse(self)
+    def __unicode__(self):
+        return "Map#%d: %s" % (self.id, self.title)
 
+    # noinspection PyDictCreation
+    def get_json_response(self):
+        map_dict = {}
+        map_dict["mapID"] = self.id
+        map_dict["title"] = self.title
+        map_dict["mapSRC"] = self.src
 
-class MapResponse:
-    def __init__(self, map_instance):
-        self.mapID = map_instance.id
-        self.title = map_instance.title
-        self.mapSRC = map_instance.map_src
+        map_dict["allFloors"] = []
+        if self.object.parent_object is not None:
+            floor_maps = self.object.floor_maps.all()
+            for floor_map in floor_maps:
+                map_dict["allFloors"].append({
+                    "floor": floor_map.floor,
+                    "mapID": floor_map.id,
+                })
 
-        floor_maps = map_instance.object.map_set.all()
-        self.allFloors = []
-        for floor_map in floor_maps:
-            self.allFloors.append({
-                "floor": floor_map.floor,
-                "mapID": floor_map.id,
-            })
+        if self.floor is not None:
+            child_objects = self.object.child_objects.filter(floor=self.floor).all()
+        else:
+            child_objects = self.object.child_objects.all()
+        map_dict["objects"] = []
+        for child_object in child_objects:
+            object_dict = {}
+            object_dict["objID"] = child_object.id
+            object_dict["location"] = child_object.title
+            # TODO Refactor
+            try:
+                object_dict["mapID"] = child_object.floor_maps.order_by("floor")[0].id
+            except IndexError:
+                object_dict["mapID"] = None
 
-        map_objects = map_instance.object.map_set.all()
-        self.objects = []
-        for map_object in map_objects:
-            self.objects.append(ResponseObject(map_object))
+            object_dict["vertices"] = []
+            vertices = child_object.vertex_set.order_by('order').all()
+            for vertex in vertices:
+                object_dict["vertices"].append({
+                    "x": vertex.x,
+                    "y": vertex.y,
+                    "order": vertex.order,
+                })
+            map_dict["objects"].append(object_dict)
 
-
-class ResponseObject:
-    def __init__(self, map_object):
-        self.objID = map_object.id
-        self.location = map_object.title
-        # TODO
-        self.mapID = map_object.first_floor_map.id
-
-        self.vertices = []
-        vertices = map_object.vertex_set.all()
-        for vertex in vertices:
-            self.vertices.append({
-                "x": vertex.x,
-                "y": vertex.y,
-            })
+        return json.dumps(map_dict)

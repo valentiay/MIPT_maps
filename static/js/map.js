@@ -44,6 +44,7 @@ function map(container, mapId) {
     }
 
     function renderMap(data, width, height) {
+        console.log(data);
         _container.html("");
         _mapInfo = data;
         var mapBlock = document.createElement("div");
@@ -190,6 +191,8 @@ function map(container, mapId) {
                 if (intersections % 2 === 1) {
                     locateBuilding(_mapInfo.objects[i]);
                     return;
+                } else {
+                    console.log(_mapInfo.objects[i])
                 }
             }
         }, 200);
