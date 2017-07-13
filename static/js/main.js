@@ -50,7 +50,6 @@ function loadFloorMap(id) {
         success: function(data) {
             var img = new Image;
             img.src = data.mapSRC;
-            console.log($(document.body).width());
             var MAX_FLOOR_MAP_WIDTH = $(document.body).width() - 170;
             var MAX_FLOOR_MAP_HEIGHT = $(document.body).height() - 40;
             $(img).on("load", function () {
@@ -133,7 +132,7 @@ $('#search-container').on('click', '.search-employee-locate', function () {
         success: function(staffInfo) {
             $.ajax('/getCabinetLocation', {
                 type: "GET",
-                data: {cabinet: staffInfo.location},
+                data: {"cabinet": staffInfo.location[0]},
                 dataType: "json",
                 success: function(location) {
                     search.hideNavigationMenu();

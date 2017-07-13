@@ -17,7 +17,7 @@ class Map(models.Model):
         return "Map#%d: %s" % (self.id, self.title)
 
     # noinspection PyDictCreation
-    def get_json_response(self):
+    def get_json_info(self):
         map_dict = {}
         map_dict["mapID"] = self.id
         map_dict["title"] = self.title
