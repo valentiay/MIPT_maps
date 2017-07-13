@@ -98,7 +98,7 @@ mainContainer.on('click', '.pointer-locate', function(event) {
     var container = $(event.target).parent();
     loadFloorMap(container.data('mapID'));
     $('#floor-map').bind('floor-map-ready', function() {
-        floorMap.locateEmployeeCabinet(container.data('cabinetID'), container.data('staffInfo'));
+        locateEmployeeCabinet(container.data('cabinetID'), container.data('staffInfo'));
         activateFloorMap();
         $('#floor-map').unbind('floor-map-ready');
     });
@@ -136,7 +136,7 @@ $('#search-container').on('click', '.search-employee-locate', function () {
                 dataType: "json",
                 success: function(location) {
                     search.hideNavigationMenu();
-                    main.locateEmployeeBuilding(location, staffInfo);
+                    locateEmployeeBuilding(location, staffInfo);
                 }
             });
         }

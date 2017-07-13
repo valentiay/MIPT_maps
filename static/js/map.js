@@ -18,8 +18,6 @@ function map(container) {
 
     var MAGIC_RATIO;
 
-    var ARROW_SIZE = 28;
-
     // Флаг для блокировки открытия информации об объекте при перетаскивании
     var _blockClick = false;
     // Timeout для предотвращения открытия информации об объекте при двойном клике
@@ -69,198 +67,24 @@ function map(container) {
         return ans;
     }
 
-
     /** Функции для работы указателем на точку */
 
-    // Задает указателю координаты
-    function setPointerPosition(info) {
+    // Задает координаты обозначению на карте
+    function setIndicatorPosition(indicator) {
         if (!_container.data("isActive"))
             return;
-        var xCord = info.data('x-cord');
-        var yCord = info.data('y-cord');
+
+        var xCord = indicator.data('x-cord');
+        var yCord = indicator.data('y-cord');
+        var xDelta = indicator.data('x-delta');
+        var yDelta = indicator.data('y-delta');
         var objPx = toPx(xCord, yCord);
 
-        var infoX = objPx.x;
-        var infoY = objPx.y - info.height() - info.data('arrowSize');
+        var infoX = objPx.x + xDelta;
+        var infoY = objPx.y + yDelta - indicator.height();
 
-        info.css("left", infoX + 'px');
-        info.css("top", infoY + 'px');
-    }
-
-    // Закрывает указатель при нажатии на крестик
-    _container.on('click', '.pointer-close', function (event) {
-        event.stopPropagation();
-        if (!_container.data("isActive"))
-            return;
-        $(event.target).parent().detach();
-    });
-
-    // Создает контейнер для указателя с описанием внутри
-    function createBasePointer(x, y, description) {
-        var menuContainer = document.createElement("div");
-        menuContainer.className = "pointer-container ru";
-        _container.get(0).appendChild(menuContainer);
-
-        var menuInfo = document.createElement("div");
-        menuInfo.className = "pointer-info";
-        menuContainer.appendChild(menuInfo);
-
-        $(menuContainer).data('x-cord', x).data('y-cord', y);
-        $(menuContainer).data('arrowSize', ARROW_SIZE);
-        $(menuInfo).html(description);
-        $(menuInfo).css("min-width", $(menuInfo).width() + 'px');
-        setPointerPosition($(menuContainer));
-        return menuContainer;
-    }
-
-    function appendWithCross(menuContainer) {
-        var menuClose = document.createElement("div");
-        menuClose.className = "pointer-button pointer-close";
-        menuContainer.appendChild(menuClose);
-    }
-
-    function appendWithLocator(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-locate";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    function appendWithPhotos(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-photos";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    function appendWithInsideMap(menuContainer) {
-        var employeeLocate = document.createElement("div");
-        employeeLocate.className = "pointer-button pointer-inside-map";
-        menuContainer.appendChild(employeeLocate);
-    }
-
-    /** Обработка клика по карте */
-
-    function processClick(event) {
-        if (!_container.data("isActive"))
-            return;
-        if (_blockClick)
-            return;
-        if (!_clickDelay) _clickDelay = setTimeout(function () {
-            clearTimeout(_clickDelay);
-            _clickDelay = 0;
-
-            var cords = toCords(event.pageX - $(_container).offset().left,
-                event.pageY - $(_container).offset().top);
-
-            for (var i = 0; i < _mapInfo.objects.length; i++) {
-                var v = _mapInfo.objects[i].vertices;
-                var intersections = 0;
-                if ((v[0].y - cords.y)*(v[v.length - 1].y - cords.y) < 0
-                    && (v[0].y - v[v.length - 1].y !== 0
-                    && v[0].x + (v[0].x - v[v.length - 1].x) * (v[0].y - cords.y) / (v[0].y - v[v.length - 1].y) > cords.x
-                    || v[0].y - v[v.length - 1].y === 0 && v[0].x > cords.x))
-                    intersections++;
-                for (var j = 1; j < v.length; j++) {
-                    if (cords.x < v[j].x && (v[j].y - cords.y) * (v[j - 1].y - cords.y) < 0
-                        && (v[j].y - v[j - 1].y !== 0
-                        && v[j].x + (v[j].x - v[j - 1].x) * (v[j].y - cords.y) / (v[j].y - v[j - 1].y) > cords.x
-                        || v[j].y - v[j - 1].y === 0 && v[j].x > cords.x))
-                        intersections++;
-                }
-                if (intersections % 2 === 1) {
-                    locateBuilding(_mapInfo.objects[i]);
-                    return;
-                }
-            }
-        }, 200);
-    }
-
-    // Обработчики
-    _container.click(processClick);
-
-    /** Создание указателей на точку по запросу из навигационного меню */
-
-    function getObjectById(objectId) {
-        var object;
-        for (var i = 0; i < _mapInfo.objects.length; i++) {
-            if (_mapInfo.objects[i].objID === objectId) {
-                object = _mapInfo.objects[i];
-                break;
-            }
-        }
-        if (object === undefined) {
-            console.error('Wrong object ID');
-        }
-        return object;
-    }
-
-    function getAvgObjectCords(object) {
-        var x = 0, y = 0, i;
-        for (i = 0; i < object.vertices.length; i++) {
-            x += object.vertices[i].x;
-            y += object.vertices[i].y;
-        }
-        x /= object.vertices.length;
-        y /= object.vertices.length;
-        var ans = {};
-        ans.x = x;
-        ans.y = y;
-        return ans;
-    }
-
-    function locateBuilding(object) {
-        var avgCords = getAvgObjectCords(object);
-        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
-        if (object.mapID !== null) {
-            appendWithInsideMap(pointer);
-            $(pointer).data("mapID", object.mapID);
-            appendWithPhotos(pointer);
-        }
-        appendWithCross(pointer);
-    }
-
-    function locateEmployeeBuilding(location, staffInfo) {
-        var object = getObjectById(location.buildingID);
-        var cords = getAvgObjectCords(object);
-
-        // Создание окна здания
-        var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + ' <b>'
-            + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-            + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-        $(pointer).data('mapID', location.mapID);
-        appendWithLocator(pointer);
-        appendWithCross(pointer);
-        $(pointer).data('mapID', location.mapID);
-        $(pointer).data('cabinetID', location.cabinetID);
-        $(pointer).data('staffInfo', staffInfo);
-
-        var px = toPx(cords.x, cords.y);
-        var dx = px.x - _container.width() / 2;
-        var dy = px.y - _container.height() / 2;
-        if (_originX + dx < 0)
-            dx = -_originX;
-        if (_originY + dy < 0)
-            dy = -_originY;
-        var newCornerCords = toCords(_container.width() + dx, _container.height() + dy);
-        if (newCornerCords.x > MAX_X)
-            dx = toPx(MAX_X, MAX_Y).x - _container.width();
-        if (newCornerCords.y > MAX_Y)
-            dy = toPx(MAX_X, MAX_Y).y - _container.height();
-
-        changePosition(dx, dy);
-    }
-
-    function locateEmployeeCabinet(cabinetID, staffInfo) {
-        var object = getObjectById(cabinetID);
-        var cords = getAvgObjectCords(object);
-
-        var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + ' <b>'
-            + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-            + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-        $(pointer).data('mapID', location.mapID);
-        appendWithCross(pointer);
-        $(pointer).data('mapID', location.mapID);
-        $(pointer).data('cabinetID', location.cabinetID);
-        $(pointer).data('staffInfo', staffInfo);
+        indicator.css("left", infoX + 'px');
+        indicator.css("top", infoY + 'px');
     }
 
     /** Масштабирование */
@@ -273,6 +97,7 @@ function map(container) {
         _clickDelay = 0;
         _scale *= ratio;
 
+        // TODO
         var blocks = _container.children('.map-block');
         for (var i = 0; i < blocks.length; i++) {
             var oldW = $(blocks[i]).width();
@@ -344,6 +169,7 @@ function map(container) {
             return;
         _originX += dx;
         _originY += dy;
+        // TODO
         var blocks = _container.children('.map-block');
         for (var i = 0; i < blocks.length; i++) {
             var x = $(blocks[i]).css("left").split('px')[0];
@@ -352,16 +178,16 @@ function map(container) {
             $(blocks[i]).css("top", y - dy);
         }
 
-        var pointMenus = _container.children('.pointer-container');
-        for (i = 0; i < pointMenus.length; i++)
-            setPointerPosition($(pointMenus[i]));
+        var indicators = _container.children('.indicator');
+        for (i = 0; i < indicators.length; i++)
+            setIndicatorPosition($(indicators[i]));
     }
 
     // Координаты мыши после предыдущего смещения
     var oldX;
     var oldY;
 
-    // Функция для смещения карты при движении мыши
+     // Функция для смещения карты при движении мыши
     function moveProcessing(event) {
         if (!_container.data("isActive"))
             return;
@@ -413,6 +239,94 @@ function map(container) {
     _container.dblclick(moveInterruption);
     _container.click(moveInterruption);
 
+    /** Обработка клика по карте */
+
+    function addIndicator(indicator) {
+        _container.get(0).appendChild(indicator);
+        setIndicatorPosition($(indicator));
+    }
+
+    function getAvgObjectCords(object) {
+        var x = 0, y = 0, i;
+        for (i = 0; i < object.vertices.length; i++) {
+            x += object.vertices[i].x;
+            y += object.vertices[i].y;
+        }
+        x /= object.vertices.length;
+        y /= object.vertices.length;
+        var ans = {};
+        ans.x = x;
+        ans.y = y;
+        return ans;
+    }
+
+    function pointBuilding(object) {
+        var avgCords = getAvgObjectCords(object);
+        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
+        if (object.mapID !== null) {
+            appendWithInsideMap(pointer);
+            $(pointer).data("mapID", object.mapID);
+            appendWithPhotos(pointer);
+        }
+        appendWithCross(pointer);
+        addIndicator(pointer);
+    }
+
+    function countIntersections(vers, dot) {
+        var intersections = 0;
+        if ((vers[0].y - dot.y)*(vers[vers.length - 1].y - dot.y) < 0
+            && (vers[0].y - vers[vers.length - 1].y !== 0
+            && vers[0].x + (vers[0].x - vers[vers.length - 1].x) * (vers[0].y - dot.y) / (vers[0].y - vers[vers.length - 1].y) > dot.x
+            || vers[0].y - vers[vers.length - 1].y === 0 && vers[0].x > dot.x))
+            intersections++;
+        for (var j = 1; j < vers.length; j++) {
+            if (dot.x < vers[j].x && (vers[j].y - dot.y) * (vers[j - 1].y - dot.y) < 0
+                && (vers[j].y - vers[j - 1].y !== 0
+                && vers[j].x + (vers[j].x - vers[j - 1].x) * (vers[j].y - dot.y) / (vers[j].y - vers[j - 1].y) > dot.x
+                || vers[j].y - vers[j - 1].y === 0 && vers[j].x > dot.x))
+                intersections++;
+        }
+        return intersections;
+    }
+
+    function processClick(event) {
+        if (!_container.data("isActive"))
+            return;
+        if (_blockClick)
+            return;
+        if (!_clickDelay) _clickDelay = setTimeout(function () {
+            clearTimeout(_clickDelay);
+            _clickDelay = 0;
+
+            var cords = toCords(event.pageX - _container.offset().left,
+                event.pageY - _container.offset().top);
+            console.log(cords);
+
+            for (var i = 0; i < _mapInfo.objects.length; i++) {
+                var vertices = _mapInfo.objects[i].vertices;
+                var intersections = countIntersections(vertices, cords);
+                if (intersections % 2 === 1) {
+                    pointBuilding(_mapInfo.objects[i]);
+                    return;
+                }
+            }
+        }, 200);
+    }
+    _container.on("click", ".map-block", processClick);
+
+    function getObjectCordsByID(objectId) {
+        var object;
+        for (var i = 0; i < _mapInfo.objects.length; i++) {
+            if (_mapInfo.objects[i].objID === objectId) {
+                object = _mapInfo.objects[i];
+                break;
+            }
+        }
+        if (object === undefined) {
+            console.error('Wrong object ID');
+        }
+        return getAvgObjectCords(object);
+    }
 
     return {
         activate: function() {
@@ -423,8 +337,26 @@ function map(container) {
         },
         increaseScale: increaseScale,
         decreaseScale: decreaseScale,
-        locateEmployeeBuilding: locateEmployeeBuilding,
-        locateEmployeeCabinet: locateEmployeeCabinet,
-        renderMap: renderMap
+        changePosition: changePosition,
+        renderMap: renderMap,
+        addIndicator: addIndicator,
+        getObjectCordsByID: getObjectCordsByID,
+        toPx: toPx,
+        toCords: toCords,
+        getMaxCords: function() {
+            var ans = {};
+            ans.x = MAX_X;
+            ans.y = MAX_Y;
+            return ans;
+        },
+        getOrigin: function() {
+            var ans = {};
+            ans.x = _originX;
+            ans.y = _originY;
+            return ans;
+        },
+        getObjectsList: function() {
+            return _mapInfo.objects
+        }
     }
 }
