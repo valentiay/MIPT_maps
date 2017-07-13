@@ -1,6 +1,6 @@
 "use strict";
 
-function map(container, mapId) {
+function map(container) {
     /** Инициализация и обновление карты */
     // Ссылка на блок с картой
     var _container = container;
@@ -24,24 +24,6 @@ function map(container, mapId) {
     var _blockClick = false;
     // Timeout для предотвращения открытия информации об объекте при двойном клике
     var _clickDelay = 0;
-
-    loadMap(mapId);
-
-    function loadMap(mapId) {
-        _scale = 1;
-        _originX = 0;
-        _originY = 0;
-        _container.html("");
-
-        $.ajax('/getMap', {
-            type: "GET",
-            data: {"mapID": mapId},
-            dataType: "json",
-            success: renderMap
-        });
-
-        return _mapInfo;
-    }
 
     function renderMap(data, width, height) {
         _container.html("");
@@ -98,11 +80,8 @@ function map(container, mapId) {
         var yCord = info.data('y-cord');
         var objPx = toPx(xCord, yCord);
 
-        var infoX;
-        var infoY;
-
-        infoX = objPx.x;
-        infoY = objPx.y - info.height() - info.data('arrowSize');
+        var infoX = objPx.x;
+        var infoY = objPx.y - info.height() - info.data('arrowSize');
 
         info.css("left", infoX + 'px');
         info.css("top", infoY + 'px');
@@ -446,7 +425,6 @@ function map(container, mapId) {
         decreaseScale: decreaseScale,
         locateEmployeeBuilding: locateEmployeeBuilding,
         locateEmployeeCabinet: locateEmployeeCabinet,
-        loadMap: loadMap,
         renderMap: renderMap
     }
 }

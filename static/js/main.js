@@ -1,7 +1,7 @@
 "use strict";
 
 var mainContainer = $('#map');
-var main = map(mainContainer, 0);
+var main = map(mainContainer);
 
 $.ajax('/getMap', {
     type: "GET",
@@ -25,7 +25,7 @@ $('#menu-button-decrease-scale').click(main.decreaseScale);
 
 
 var floorMapContainer = $('#floor-map');
-var floorMap = map(floorMapContainer, 0);
+var floorMap = map(floorMapContainer);
 floorMap.deactivate();
 
 function renderFloorList(data) {
