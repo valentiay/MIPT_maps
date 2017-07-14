@@ -90,13 +90,6 @@ function loadFloorMap(id) {
     });
 }
 
-// Показывает карту этажа
-function activateFloorMap() {
-    main.deactivate();
-    $('#floor-map-container').css("visibility", "visible").hide().fadeIn(200);
-    floorMap.activate();
-}
-
 // Загружает карту другого этажа
 $('#floor-list').on('click', 'p', function(event) {
     event.stopPropagation();
@@ -105,13 +98,28 @@ $('#floor-list').on('click', 'p', function(event) {
     loadFloorMap($(event.target).data('mapID'));
 });
 
+// Показывает контейнер с картой этажа
+function activateFloorMap() {
+    main.deactivate();
+    $('#floor-map-container').hide().css("visibility", "visible").fadeIn(200);
+    floorMap.activate();
+}
+
 // Показывает положение сотрудника на карте этажа
 mainContainer.on('click', '.pointer-locate', function(event) {
     event.stopPropagation();
     var container = $(event.target).parent();
+
+    $("<div />", {
+        "class": "floor-loader loader"
+    }).appendTo($("<div />", {
+        "class": "floor-loader-container"
+    }).appendTo($(document.body)));
+
     loadFloorMap(container.data('mapID'));
 
     $('#floor-map').bind('floor-map-ready', function() {
+        $(document.body).children(".floor-loader-container").remove();
         locateEmployeeCabinet(container.data('cabinetID'), container.data('staffInfo'));
         activateFloorMap();
         $('#floor-map').unbind('floor-map-ready');
@@ -122,15 +130,27 @@ mainContainer.on('click', '.pointer-locate', function(event) {
 mainContainer.on('click', '.pointer-inside-map', function(event){
     event.stopPropagation();
     var container = $(event.target).parent();
+
+    $("<div />", {
+        "class": "floor-loader loader"
+    }).appendTo($("<div />", {
+        "class": "floor-loader-container"
+    }).appendTo($(document.body)));
+
     loadFloorMap(container.data('mapID'));
-    activateFloorMap();
+
+    $('#floor-map').bind("floor-map-ready", function() {
+        $(document.body).children(".floor-loader-container").remove();
+        activateFloorMap();
+        $('#floor-map').unbind('floor-map-ready');
+    });
 });
 
 // Закрывает карту этажа
-$('#floor-close').click(function(event) {
+$('#floor-close').click(function() {
     floorMap.deactivate();
     $('#floor-map-container').fadeOut(200, function(){
-        $(event.currentTarget).css("visibility", "hidden").show();
+        $(this).css("visibility", "hidden").show();
     });
     main.activate();
 });
@@ -140,13 +160,22 @@ $('#floor-close').click(function(event) {
 var navigation = navigation();
 
 $('#menu-button-search').click(navigation.showNavigationMenu);
-$('#search-container').on('click', '.search-employee-locate', function () {
+$('#search-container').on('click', '.search-employee-locate', function (event) {
     var employeeID = $(event.target).data("id");
+    var employeeContainer = $(event.target.parentNode);
     $.ajax('/phonebook', {
         type: "GET",
         data: {"rid" : employeeID},
         dataType: "json",
+        beforeSend: function() {
+            $("<div />", {
+                "class": "employee-loader loader"
+            }).appendTo($("<div />", {
+                "class": "employee-loader-container"
+            }).appendTo(employeeContainer));
+        },
         error: function() {
+            employeeContainer.children(".employee-loader-container").remove();
             addError("Не удалось загрузить информацию о сотруднике")
         },
         success: function(staffInfo) {
@@ -161,9 +190,11 @@ $('#search-container').on('click', '.search-employee-locate', function () {
                 data: {"cabinet": staffInfo.location[0]},
                 dataType: "json",
                 error: function() {
+                    employeeContainer.children(".employee-loader-container").remove();
                     addError("Не удалось найти кабинет");
                 },
                 success: function(location) {
+                    employeeContainer.children(".employee-loader-container").remove();
                     navigation.hideNavigationMenu();
                     locateEmployeeBuilding(location, staffInfo);
                 }

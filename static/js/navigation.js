@@ -13,10 +13,19 @@ function navigation() {
         type: "GET",
         data: {fid:''},
         dataType: "json",
+        beforeSend: function() {
+            $("<div />", {
+                "class": "navigation-loader loader"
+            }).appendTo($("<div />", {
+                "class": "navigation-loader-container"
+            }).prependTo($('#search-full-list-container')));
+        },
         error: function() {
+            $('#search-full-list-container').children().remove(".navigation-loader-container");
             addError("Не удалось загрузить список отделов")
         },
         success: function(departments) {
+            $('#search-full-list-container').children().remove(".navigation-loader-container");
             _departments = departments;
             renderDepartments();
         }
@@ -58,10 +67,19 @@ function navigation() {
         type: "GET",
         data: {namelist : "y"},
         dataType: "json",
+        beforeSend: function() {
+            $("<div />", {
+                "class": "navigation-loader loader"
+            }).appendTo($("<div />", {
+                "class": "navigation-loader-container"
+            }).prependTo($('#search-list-container')));
+        },
         error: function() {
+            $('#search-list-container').children().remove(".navigation-loader-container");
             addError("Не удалось загрузить список сотрудников")
         },
         success: function(staff) {
+            $('#search-list-container').children().remove(".navigation-loader-container");
             _staff = staff;
         }
     });
