@@ -1,8 +1,10 @@
 "use strict";
 
+/** Главная карта */
 var mainContainer = $('#map');
 var main = map(mainContainer);
 
+// Загрузка главной карты
 $.ajax('/getMap', {
     type: "GET",
     data: {"mapID": 0},
@@ -23,25 +25,28 @@ $('#menu-button-increase-scale').click(main.increaseScale);
 $('#menu-button-decrease-scale').click(main.decreaseScale);
 
 
+/** Карта этажа */
 
 var floorMapContainer = $('#floor-map');
 var floorMap = map(floorMapContainer);
 floorMap.deactivate();
 
+// Отрисовывает список этажей
 function renderFloorList(data) {
     var floorList = $('#floor-list');
     floorList.html("");
     for (var i = 0; i < data.allFloors.length; i++) {
-        var floorLink = document.createElement("p");
-        if (data.allFloors[i].mapID === data.mapID)
-            floorLink.className = "floor-active-p";
-        floorLink.innerHTML = "Этаж " + data.allFloors[i].floor;
-        floorList.get(0).appendChild(floorLink);
-        $('#floor-title').html(data.title);
-        $(floorLink).data('mapID', data.allFloors[i].mapID);
+        var floorLink = $("<p />", {
+            "class": (data.allFloors[i].mapID === data.mapID)?"floor-active-p":"",
+            "text": "Этаж " + data.allFloors[i].floor
+        });
+        floorLink.data('mapID', data.allFloors[i].mapID);
+        floorList.append(floorLink);
+        $('#floor-title').text(data.title);
     }
 }
 
+// Загружает карту этажа и изменяет размер контейнера карты
 function loadFloorMap(id) {
     $.ajax('/getMap', {
         type: "GET",
@@ -79,13 +84,14 @@ function loadFloorMap(id) {
     });
 }
 
+// Показывает карту этажа
 function activateFloorMap() {
     main.deactivate();
     $('#floor-map-container').css("visibility", "visible").hide().fadeIn(200);
     floorMap.activate();
 }
 
-
+// Загружает карту другого этажа
 $('#floor-list').on('click', 'p', function(event) {
     event.stopPropagation();
     if (event.target.className === "floor-active-p")
@@ -93,10 +99,12 @@ $('#floor-list').on('click', 'p', function(event) {
     loadFloorMap($(event.target).data('mapID'));
 });
 
+// Показывает положение сотрудника на карте этажа
 mainContainer.on('click', '.pointer-locate', function(event) {
     event.stopPropagation();
     var container = $(event.target).parent();
     loadFloorMap(container.data('mapID'));
+
     $('#floor-map').bind('floor-map-ready', function() {
         locateEmployeeCabinet(container.data('cabinetID'), container.data('staffInfo'));
         activateFloorMap();
@@ -104,6 +112,7 @@ mainContainer.on('click', '.pointer-locate', function(event) {
     });
 });
 
+// Открывает внутреннюю карту здания
 mainContainer.on('click', '.pointer-inside-map', function(event){
     event.stopPropagation();
     var container = $(event.target).parent();
@@ -111,18 +120,20 @@ mainContainer.on('click', '.pointer-inside-map', function(event){
     activateFloorMap();
 });
 
-$('#floor-close').click(function() {
+// Закрывает карту этажа
+$('#floor-close').click(function(event) {
     floorMap.deactivate();
     $('#floor-map-container').fadeOut(200, function(){
-        $(this).css("visibility", "hidden").show();
+        $(event.currentTarget).css("visibility", "hidden").show();
     });
     main.activate();
 });
 
+/** Навигация */
 
+var navigation = navigation();
 
-var search = navigation();
-$('#menu-button-search').click(search.showNavigationMenu);
+$('#menu-button-search').click(navigation.showNavigationMenu);
 $('#search-container').on('click', '.search-employee-locate', function () {
     var employeeID = $(event.target).data("id");
     $.ajax('/phonebook', {
@@ -135,7 +146,7 @@ $('#search-container').on('click', '.search-employee-locate', function () {
                 data: {"cabinet": staffInfo.location[0]},
                 dataType: "json",
                 success: function(location) {
-                    search.hideNavigationMenu();
+                    navigation.hideNavigationMenu();
                     locateEmployeeBuilding(location, staffInfo);
                 }
             });

@@ -26,10 +26,11 @@ function map(container) {
     function renderMap(data, width, height) {
         _container.html("");
         _mapInfo = data;
-        var mapBlock = document.createElement("div");
-        mapBlock.className = "map-block";
-        _container.get(0).appendChild(mapBlock);
-        $(mapBlock).css("background-image", 'url(' + _mapInfo.mapSRC + ')');
+        var mapBlock = $("<div />", {
+            "class": "map-block"
+        });
+        _container.append(mapBlock);
+        mapBlock.css("background-image", 'url(' + _mapInfo.mapSRC + ')');
         _container.data("isActive", false);
         MAX_X = width;
         MAX_Y = height;
@@ -97,14 +98,11 @@ function map(container) {
         _clickDelay = 0;
         _scale *= ratio;
 
-        // TODO
-        var blocks = _container.children('.map-block');
-        for (var i = 0; i < blocks.length; i++) {
-            var oldW = $(blocks[i]).width();
-            var oldH = $(blocks[i]).height();
-            $(blocks[i]).css("width", oldW * ratio + 'px');
-            $(blocks[i]).css("height", oldH * ratio + 'px');
-        }
+        var block = _container.children('.map-block');
+        var oldW = block.width();
+        var oldH = block.height();
+        block.css("width", oldW * ratio + 'px');
+        block.css("height", oldH * ratio + 'px');
 
         var clickCords = toCords(clickX, clickY, _scale / ratio);
         var newClickPx = toPx(clickCords.x, clickCords.y, _scale);
@@ -169,17 +167,14 @@ function map(container) {
             return;
         _originX += dx;
         _originY += dy;
-        // TODO
-        var blocks = _container.children('.map-block');
-        for (var i = 0; i < blocks.length; i++) {
-            var x = $(blocks[i]).css("left").split('px')[0];
-            var y = $(blocks[i]).css("top").split('px')[0];
-            $(blocks[i]).css("left", x - dx);
-            $(blocks[i]).css("top", y - dy);
-        }
+        var block = _container.children('.map-block');
+        var x = block.css("left").split('px')[0];
+        var y = block.css("top").split('px')[0];
+        block.css("left", x - dx);
+        block.css("top", y - dy);
 
         var indicators = _container.children('.indicator');
-        for (i = 0; i < indicators.length; i++)
+        for (var i = 0; i < indicators.length; i++)
             setIndicatorPosition($(indicators[i]));
     }
 
@@ -242,8 +237,8 @@ function map(container) {
     /** Обработка клика по карте */
 
     function addIndicator(indicator) {
-        _container.get(0).appendChild(indicator);
-        setIndicatorPosition($(indicator));
+        _container.append(indicator);
+        setIndicatorPosition(indicator);
     }
 
     function getAvgObjectCords(object) {
@@ -265,7 +260,7 @@ function map(container) {
         var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
         if (object.mapID !== null) {
             appendWithInsideMap(pointer);
-            $(pointer).data("mapID", object.mapID);
+            pointer.data("mapID", object.mapID);
             appendWithPhotos(pointer);
         }
         appendWithCross(pointer);

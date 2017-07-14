@@ -1,56 +1,66 @@
 var ARROW_SIZE = 28;
 
+/** Работа с указателями */
+
 // Создает контейнер для указателя с описанием внутри
 function createBasePointer(x, y, description) {
-    var menuContainer = document.createElement("div");
-    menuContainer.className = "pointer-container ru indicator";
+    var pointerContainer = $("<div />", {
+        "class": "pointer-container ru indicator"
+    });
+    pointerContainer.data('x-cord', x).data('y-cord', y);
+    pointerContainer.data('x-delta', 0).data('y-delta', -ARROW_SIZE);
 
-    var menuInfo = document.createElement("div");
-    menuInfo.className = "pointer-info";
-    menuContainer.appendChild(menuInfo);
+    var pointerInfo = $("<div />",{
+        "class": "pointer-info"
+    });
+    pointerInfo.html(description);
+    pointerInfo.css("min-width", pointerInfo.width() + 'px');
 
-    $(menuContainer).data('x-cord', x).data('y-cord', y);
-    $(menuContainer).data('x-delta', 0).data('y-delta', -ARROW_SIZE);
-    // $(menuContainer).data('arrowSize', ARROW_SIZE);
-    $(menuInfo).html(description);
-    $(menuInfo).css("min-width", $(menuInfo).width() + 'px');
-    return menuContainer;
+    pointerContainer.append(pointerInfo);
+
+    return pointerContainer;
 }
 
-function appendWithCross(menuContainer) {
-    var menuClose = document.createElement("div");
-    menuClose.className = "pointer-button pointer-close";
-    menuContainer.appendChild(menuClose);
+// Добавляет к указателю крестик
+function appendWithCross(pointerContainer) {
+    $("<div />", {
+        "class": "pointer-button pointer-close"
+    }).appendTo(pointerContainer);
 }
 
-function appendWithLocator(menuContainer) {
-    var employeeLocate = document.createElement("div");
-    employeeLocate.className = "pointer-button pointer-locate";
-    menuContainer.appendChild(employeeLocate);
+// Добавляет к указателю кнопку для поиска кабинета
+function appendWithLocator(pointerContainer) {
+    $("<div />", {
+        "class": "pointer-button pointer-locate"
+    }).appendTo(pointerContainer);
 }
 
-function appendWithPhotos(menuContainer) {
-    var employeeLocate = document.createElement("div");
-    employeeLocate.className = "pointer-button pointer-photos";
-    menuContainer.appendChild(employeeLocate);
+// Добавляет к указателю кнопку для загрузки фотографий
+function appendWithPhotos(pointerContainer) {
+    $("<div />", {
+        "class": "pointer-button pointer-photos"
+    }).appendTo(pointerContainer);
 }
 
-function appendWithInsideMap(menuContainer) {
-    var employeeLocate = document.createElement("div");
-    employeeLocate.className = "pointer-button pointer-inside-map";
-    menuContainer.appendChild(employeeLocate);
+// Добавляет к указателю кнопку для открытия внутренней карты
+function appendWithInsideMap(pointerContainer) {
+    $("<div />", {
+        "class": "pointer-button pointer-inside-map"
+    }).appendTo(pointerContainer);
 }
+
 
 // Закрывает указатель при нажатии на крестик
 $(document.body).on('click', '.pointer-close', function (event) {
     event.stopPropagation();
     if (!$(event.target).parent().parent().data("isActive"))
         return;
-    $(event.target).parent().detach();
+    $(event.target).parent().remove();
 });
 
 /** Создание указателей на точку по запросу из навигационного меню */
 
+// Найти здание с кабинетом сотрудника на главной карте
 function locateEmployeeBuilding(location, staffInfo) {
     var cords = main.getObjectCordsByID(location.buildingID);
 
@@ -58,13 +68,13 @@ function locateEmployeeBuilding(location, staffInfo) {
     var pointer = createBasePointer(cords.x, cords.y,
         staffInfo.occupation + '<br/><b>'
         + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-        + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-    $(pointer).data('mapID', location.mapID);
+        + staffInfo.phone_ext + '<br />' + staffInfo.location);
+    pointer.data('mapID', location.mapID);
     appendWithLocator(pointer);
     appendWithCross(pointer);
-    $(pointer).data('mapID', location.mapID);
-    $(pointer).data('cabinetID', location.cabinetID);
-    $(pointer).data('staffInfo', staffInfo);
+    pointer.data('mapID', location.mapID);
+    pointer.data('cabinetID', location.cabinetID);
+    pointer.data('staffInfo', staffInfo);
     main.addIndicator(pointer);
 
 
@@ -79,7 +89,6 @@ function locateEmployeeBuilding(location, staffInfo) {
         dy = -origin.y;
 
     var maxCords = main.getMaxCords();
-    console.log(main.getMaxCords());
     var newCornerCords = main.toCords(mainContainer.width() + dx, mainContainer.height() + dy);
     if (newCornerCords.x > maxCords.x)
         dx = main.toPx(maxCords.x, maxCords.y).x - mainContainer.width();
@@ -88,8 +97,9 @@ function locateEmployeeBuilding(location, staffInfo) {
     main.changePosition(dx, dy);
 }
 
+// Найти кабинет сотрудника на карте этажа
 function locateEmployeeCabinet(cabinetID, staffInfo) {
-    var cords = floorMap.getObjectCordsByID(cabinetID); //.getObjectCordsById(cabinetID);
+    var cords = floorMap.getObjectCordsByID(cabinetID);
 
     var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
         + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
