@@ -13,6 +13,9 @@ function navigation() {
         type: "GET",
         data: {fid:''},
         dataType: "json",
+        error: function() {
+            addError("Не удалось загрузить список отделов")
+        },
         success: function(departments) {
             _departments = departments;
             renderDepartments();
@@ -55,6 +58,9 @@ function navigation() {
         type: "GET",
         data: {namelist : "y"},
         dataType: "json",
+        error: function() {
+            addError("Не удалось загрузить список сотрудников")
+        },
         success: function(staff) {
             _staff = staff;
         }
@@ -92,6 +98,9 @@ function navigation() {
                         "class": "search-loader-container"
                     }).appendTo(deptContainer));
                 },
+                error: function() {
+                    addError("Не удалось загрузить список сотрудников")
+                },
                 success: function(deptInfo) {
                     if (!deptLabel.hasClass('search-department-active'))
                         return;
@@ -109,9 +118,6 @@ function navigation() {
                             addEmployee(employeeList, deptInfo.staff[i]);
                         }
                     }
-                },
-                error: function() {
-                    alert("something gone wrong")
                 }
             });
         } else {
@@ -166,6 +172,8 @@ function navigation() {
 
     // Выводит список сотрудников и отделов с подсвеченной ключевой подстрокой
     function search() {
+        if (_staff === undefined)
+            return;
         var searchStr = $('#search-input-text').val();
         var highlightedStr = '<span class="search-found">' + searchStr + '</span>';
         var searchListStaff = $('#search-list-staff');
@@ -180,7 +188,7 @@ function navigation() {
                 var employeeContainer = $("<div />", {
                     "class": "search-employee-container"
                 });
-                employeeContainer.data('id', _staff[i].id);
+                employeeContainer.data('id', _staff[i].id[0]);
 
                 employeeContainer.append(employee);
                 searchListStaff.append(employeeContainer);

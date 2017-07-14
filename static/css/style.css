@@ -256,7 +256,7 @@ body{
 
 #search-container{
     display: none;
-    z-index: 1000000;
+    z-index: 10000000;
     position: absolute;
     top: 0;
     left: 0;
@@ -501,4 +501,23 @@ body{
 	/*border: 6px solid #005892;*/
 	border: 3px solid #FFFFFF;
 	border-right-color: transparent;
+}
+
+#errors {
+    position: fixed;
+    left: calc(50% - 100px);
+    top: 0;
+    width: 200px;
+    z-index: 11000000;
+}
+
+.error {
+    position: relative;
+    float: left;
+    margin-top: 5px;
+    padding: 10px;
+    background-color: #000000;
+    color: #FFF;
+    clear: both;
+    z-index: 11000000;
 }

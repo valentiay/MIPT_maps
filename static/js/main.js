@@ -9,6 +9,9 @@ $.ajax('/getMap', {
     type: "GET",
     data: {"mapID": 0},
     dataType: "json",
+    error: function() {
+        addError("Не удалось загрузить карту, перезагрузите страницу через некоторое время")
+    },
     success: function(data) {
         var img = new Image;
         img.src = data.mapSRC;
@@ -52,6 +55,9 @@ function loadFloorMap(id) {
         type: "GET",
         data: {"mapID": id},
         dataType: "json",
+        error: function() {
+            addError("Не удалось загрузить карту, перезагрузите страницу через некоторое время")
+        },
         success: function(data) {
             var img = new Image;
             img.src = data.mapSRC;
@@ -140,11 +146,23 @@ $('#search-container').on('click', '.search-employee-locate', function () {
         type: "GET",
         data: {"rid" : employeeID},
         dataType: "json",
+        error: function() {
+            addError("Не удалось загрузить информацию о сотруднике")
+        },
         success: function(staffInfo) {
+            if (staffInfo.location === null) {
+                addError("Кабинет сотрудника не указан");
+            }
+            if (staffInfo instanceof Array) {
+                addError("Информация о сотруднике не указана");
+            }
             $.ajax('/getCabinetLocation', {
                 type: "GET",
                 data: {"cabinet": staffInfo.location[0]},
                 dataType: "json",
+                error: function() {
+                    addError("Не удалось найти кабинет");
+                },
                 success: function(location) {
                     navigation.hideNavigationMenu();
                     locateEmployeeBuilding(location, staffInfo);
