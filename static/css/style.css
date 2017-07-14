@@ -19,6 +19,36 @@
     -webkit-user-select: none;
 }
 
+::-webkit-scrollbar-button {
+    background-repeat:no-repeat;
+    width:5px;
+    height:0;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #444;
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    background-color: rgb(27, 193, 245);
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background-color: rgb(27, 193, 245);
+}
+
+::-webkit-resizer{
+    background-repeat: no-repeat;
+    width: 4px;
+    height: 0;
+}
+
+::-webkit-scrollbar{
+    width: 4px;
+}
+
 body{
     overflow: hidden;
     margin: 0;
@@ -372,6 +402,7 @@ body{
     font-family: Helvetica, sans-serif;
     color: #0AC8FA;
     cursor: pointer;
+    word-wrap: break-word;
 }
 
 .search-department{
@@ -426,34 +457,8 @@ body{
     font-weight: bold;
 }
 
-::-webkit-scrollbar-button {
-    background-repeat:no-repeat;
-    width:5px;
-    height:0;
-}
-
-::-webkit-scrollbar-track {
-    background-color: #444;
-}
-
-::-webkit-scrollbar-thumb {
-    -webkit-border-radius: 0;
-    border-radius: 0;
-    background-color: rgb(27, 193, 245);
-}
-
-::-webkit-scrollbar-thumb:hover{
-    background-color: rgb(27, 193, 245);
-}
-
-::-webkit-resizer{
-    background-repeat: no-repeat;
-    width: 4px;
-    height: 0;
-}
-
-::-webkit-scrollbar{
-    width: 4px;
+#search-list-divisions > .search-department-container {
+    margin-left: 0;
 }
 
 @-webkit-keyframes loader {
@@ -477,12 +482,23 @@ body{
 }
 
 .loader {
-	width: 35px;
-	height: 35px;
-	border: 6px solid #005892;
-	border-right-color: transparent;
-	border-radius: 100%;
+    border-radius: 100%;
 	-webkit-animation: loader 0.5s infinite linear;
 	-moz-animation: loader 0.5s infinite linear;
 	animation: loader 0.5s infinite linear;
+}
+
+.search-loader-container {
+    float:left;
+    padding: 0 calc(50% - 20px);
+    width: calc(20px);
+}
+
+.search-loader {
+    float: left;
+	width: 10px;
+	height: 10px;
+	/*border: 6px solid #005892;*/
+	border: 3px solid #FFFFFF;
+	border-right-color: transparent;
 }

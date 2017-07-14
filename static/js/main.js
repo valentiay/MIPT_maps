@@ -121,7 +121,7 @@ $('#floor-close').click(function() {
 
 
 
-var search = searcher();
+var search = navigation();
 $('#menu-button-search').click(search.showNavigationMenu);
 $('#search-container').on('click', '.search-employee-locate', function () {
     var employeeID = $(event.target).data("id");
