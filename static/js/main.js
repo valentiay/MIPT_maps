@@ -19,7 +19,6 @@ $.ajax('/getMap', {
             var width = img.width;
             var height = img.height;
             main.renderMap(data, width, height);
-            main.increaseScale()
         });
     }
 });

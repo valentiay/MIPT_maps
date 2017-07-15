@@ -55,6 +55,10 @@ $(document.body).on('click', '.pointer-close', function (event) {
     event.stopPropagation();
     if (!$(event.target).parent().parent().data("isActive"))
         return;
+    if ($(event.target).parent().parent().attr("id") === "map")
+        main.clearObject($(event.target).parent().data("object"));
+    else
+        floorMap.clearObject($(event.target).parent().data("object"));
     $(event.target).parent().remove();
 });
 
@@ -62,7 +66,9 @@ $(document.body).on('click', '.pointer-close', function (event) {
 
 // Найти здание с кабинетом сотрудника на главной карте
 function locateEmployeeBuilding(location, staffInfo) {
-    var cords = main.getObjectCordsByID(location.buildingID);
+    main.clear();
+    var object = main.getObjectByID(location.buildingID);
+    var cords = main.getAvgObjectCords(object);
 
     // Создание окна здания
     var pointer = createBasePointer(cords.x, cords.y,
@@ -75,6 +81,8 @@ function locateEmployeeBuilding(location, staffInfo) {
     pointer.data('mapID', location.mapID);
     pointer.data('cabinetID', location.cabinetID);
     pointer.data('staffInfo', staffInfo);
+    pointer.data('object', object);
+    main.fillObject(object);
     main.addIndicator(pointer);
 
 
@@ -99,12 +107,17 @@ function locateEmployeeBuilding(location, staffInfo) {
 
 // Найти кабинет сотрудника на карте этажа
 function locateEmployeeCabinet(cabinetID, staffInfo) {
-    var cords = floorMap.getObjectCordsByID(cabinetID);
+    floorMap.clear();
+
+    var object = floorMap.getObjectByID(cabinetID);
+    var cords = floorMap.getAvgObjectCords(object);
 
     var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
         + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
         + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
-    $(pointer).data('mapID', location.mapID);
+    pointer.data('mapID', location.mapID);
+    pointer.data('object', object);
+    floorMap.fillObject(object);
     appendWithCross(pointer);
     floorMap.addIndicator(pointer);
 }

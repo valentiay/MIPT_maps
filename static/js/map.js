@@ -23,24 +23,29 @@ function map(container) {
     // Timeout для предотвращения открытия информации об объекте при двойном клике
     var _clickDelay = 0;
 
+    var _context;
+    var _mapBlock;
     function renderMap(data, width, height) {
         _container.html("");
         _mapInfo = data;
-        var mapBlock = $("<div />", {
+        _mapBlock = $("<canvas />", {
             "class": "map-block"
         });
-        _container.append(mapBlock);
-        mapBlock.css("background-image", 'url(' + _mapInfo.mapSRC + ')');
+        _mapBlock.attr("width", width);
+        _mapBlock.attr("height", height);
+        _context = _mapBlock.get(0).getContext("2d");
+        _container.append(_mapBlock);
+        _mapBlock.css("background-image", 'url(' + _mapInfo.mapSRC + ')');
         _container.data("isActive", false);
         MAX_X = width;
         MAX_Y = height;
         if (MAX_X / MAX_Y < _container.width() / _container.height()) {
-            $(mapBlock).css("width", "100%");
-            $(mapBlock).css("height", _container.width() * MAX_Y / MAX_X);
+            _mapBlock.css("width", "100%");
+            _mapBlock.css("height", _container.width() * MAX_Y / MAX_X);
             MAGIC_RATIO = MAX_X / _container.width();
         } else {
-            $(mapBlock).css("width", _container.height() * MAX_X / MAX_Y);
-            $(mapBlock).css("height", "100%");
+            _mapBlock.css("width", _container.height() * MAX_X / MAX_Y);
+            _mapBlock.css("height", "100%");
             MAGIC_RATIO = MAX_Y / _container.height();
         }
         _container.data("isActive", true);
@@ -126,7 +131,7 @@ function map(container) {
     function increaseScale(event) {
         if (!_container.data("isActive"))
             return;
-        if (_scale * 1.5 > 5)
+        if (_scale * 1.5 > 3)
             return;
         var x, y;
         if (event === undefined) {
@@ -234,6 +239,43 @@ function map(container) {
     _container.dblclick(moveInterruption);
     _container.click(moveInterruption);
 
+    /** Работа с холстом */
+
+    function clear() {
+        _container.children(":not(.map-block)").remove();
+        _context.clearRect(0, 0, MAX_X, MAX_Y);
+    }
+
+    function fillObject(object) {
+        var vertices = object.vertices;
+        _context.beginPath();
+        _context.moveTo(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y);
+        for (var i = 0; i < vertices.length; i++) {
+            _context.lineTo(vertices[i].x, vertices[i].y);
+        }
+        _context.fillStyle = "rgba(255, 0, 0, 0.5)";
+        _context.fill();
+    }
+
+    function clearObject(object) {
+        var vertices = object.vertices;
+        var minX = MAX_X;
+        var maxX = 0;
+        var minY = MAX_Y;
+        var maxY = 0;
+        for (var i = 0; i < vertices.length; i++) {
+            if (minX > vertices[i].x)
+                minX = vertices[i].x;
+            if (maxX < vertices[i].x)
+                maxX = vertices[i].x;
+            if (minY > vertices[i].y)
+                minY = vertices[i].y;
+            if (maxY < vertices[i].y)
+                maxY = vertices[i].y;
+        }
+        _context.clearRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
     /** Обработка клика по карте */
 
     function addIndicator(indicator) {
@@ -258,6 +300,7 @@ function map(container) {
     function pointBuilding(object) {
         var avgCords = getAvgObjectCords(object);
         var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
+        pointer.data("object", object);
         if (object.mapID !== null) {
             appendWithInsideMap(pointer);
             pointer.data("mapID", object.mapID);
@@ -293,6 +336,7 @@ function map(container) {
             clearTimeout(_clickDelay);
             _clickDelay = 0;
 
+            clear();
             var cords = toCords(event.pageX - _container.offset().left,
                 event.pageY - _container.offset().top);
             console.log(cords);
@@ -302,6 +346,7 @@ function map(container) {
                 var intersections = countIntersections(vertices, cords);
                 if (intersections % 2 === 1) {
                     pointBuilding(_mapInfo.objects[i]);
+                    fillObject(_mapInfo.objects[i]);
                     return;
                 }
             }
@@ -309,8 +354,9 @@ function map(container) {
     }
     _container.on("click", ".map-block", processClick);
 
-    function getObjectCordsByID(objectId) {
+    function getObjectByID(objectId) {
         var object;
+        // TODO
         for (var i = 0; i < _mapInfo.objects.length; i++) {
             if (_mapInfo.objects[i].objID === objectId) {
                 object = _mapInfo.objects[i];
@@ -320,7 +366,7 @@ function map(container) {
         if (object === undefined) {
             console.error('Wrong object ID');
         }
-        return getAvgObjectCords(object);
+        return object;
     }
 
     return {
@@ -335,7 +381,8 @@ function map(container) {
         changePosition: changePosition,
         renderMap: renderMap,
         addIndicator: addIndicator,
-        getObjectCordsByID: getObjectCordsByID,
+        getObjectByID: getObjectByID,
+        getAvgObjectCords: getAvgObjectCords,
         toPx: toPx,
         toCords: toCords,
         getMaxCords: function() {
@@ -352,6 +399,9 @@ function map(container) {
         },
         getObjectsList: function() {
             return _mapInfo.objects
-        }
+        },
+        clearObject: clearObject,
+        fillObject: fillObject,
+        clear: clear
     }
 }
