@@ -572,3 +572,35 @@ body{
     clear: both;
     z-index: 11000000;
 }
+
+/****/
+
+#manage-map {
+    float: left;
+    width: calc(100% - 250px);
+    height: 100vh;
+    overflow: hidden;
+    z-index: 1;
+}
+
+#controls {
+    float: left;
+    position: fixed;
+    right: 0;
+    padding: 10px;
+    width: 230px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #FFF;
+    z-index: 10000000;
+    overflow: scroll;
+}
+
+#controls  a {
+    color: #fff
+}
+
+#controls li {
+    margin: 5px;
+    cursor: pointer;
+}

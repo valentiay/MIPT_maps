@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel = "stylesheet" href = "/static/css/style.css">
+    <meta charset="UTF-8">
+    <title>Управление картами</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+<body>
+
+<div id="manage-map"></div>
+<div id="controls"></div>
+
+<div class="menu-button" id="menu-button-increase-scale"></div>
+<div class="menu-button" id="menu-button-decrease-scale"></div>
+
+<div id="errors"></div>
+
+<script type="text/javascript">
+    var MAP_ID = {{ map_id }};
+</script>
+
+<script defer type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
+<script defer type="text/javascript" src="/static/js/errors.js"></script>
+<script defer type="text/javascript" src="/static/js/map.js"></script>
+<script defer type="text/javascript" src="/static/js/indicators.js"></script>
+<script defer type="text/javascript" src="/static/js/manage.js"></script>
+
+</body>
+</html>

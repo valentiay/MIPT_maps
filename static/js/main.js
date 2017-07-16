@@ -26,6 +26,113 @@ $.ajax('/getMap', {
 $('#menu-button-increase-scale').click(main.increaseScale);
 $('#menu-button-decrease-scale').click(main.decreaseScale);
 
+/** Создание указателей на точку по запросу из навигационного меню */
+
+// Найти здание с кабинетом сотрудника на главной карте
+function locateEmployeeBuilding(location, staffInfo) {
+    main.clear();
+    var object = main.getObjectByID(location.buildingID);
+    var cords = main.getAvgObjectCords(object);
+
+    // Создание окна здания
+    var pointer = createBasePointer(cords.x, cords.y,
+        staffInfo.occupation + '<br/><b>'
+        + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
+        + staffInfo.phone_ext + '<br />' + staffInfo.location);
+    pointer.data('mapID', location.mapID);
+    appendWithLocator(pointer);
+    appendWithCross(pointer);
+    pointer.data('mapID', location.mapID);
+    pointer.data('cabinetID', location.cabinetID);
+    pointer.data('staffInfo', staffInfo);
+    pointer.data('object', object);
+    main.fillObject(object);
+    main.addIndicator(pointer);
+
+
+    var px = main.toPx(cords.x, cords.y);
+    var dx = px.x - mainContainer.width() / 2;
+    var dy = px.y - mainContainer.height() / 2;
+
+    var origin = main.getOrigin();
+    if (origin.x + dx < 0)
+        dx = -origin.x;
+    if (origin.y + dy < 0)
+        dy = -origin.y;
+
+    var maxCords = main.getMaxCords();
+    var newCornerCords = main.toCords(mainContainer.width() + dx, mainContainer.height() + dy);
+    if (newCornerCords.x > maxCords.x)
+        dx = main.toPx(maxCords.x, maxCords.y).x - mainContainer.width();
+    if (newCornerCords.y > maxCords.y)
+        dy = main.toPx(maxCords.x, maxCords.y).y - mainContainer.height();
+    main.changePosition(dx, dy);
+}
+
+// Найти кабинет сотрудника на карте этажа
+function locateEmployeeCabinet(cabinetID, staffInfo) {
+    floorMap.clear();
+
+    var object = floorMap.getObjectByID(cabinetID);
+    var cords = floorMap.getAvgObjectCords(object);
+
+    var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
+        + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
+        + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
+    pointer.data('mapID', location.mapID);
+    pointer.data('object', object);
+    floorMap.fillObject(object);
+    appendWithCross(pointer);
+    floorMap.addIndicator(pointer);
+}
+
+/** Навигация */
+
+var navigation = navigation();
+
+$('#menu-button-search').click(navigation.showNavigationMenu);
+$('#search-container').on('click', '.search-employee-locate', function (event) {
+    var employeeID = $(event.target).data("id");
+    var employeeContainer = $(event.target.parentNode);
+    $.ajax('/phonebook', {
+        type: "GET",
+        data: {"rid" : employeeID},
+        dataType: "json",
+        beforeSend: function() {
+            $("<div />", {
+                "class": "employee-loader loader"
+            }).appendTo($("<div />", {
+                "class": "employee-loader-container"
+            }).appendTo(employeeContainer));
+        },
+        error: function() {
+            employeeContainer.children(".employee-loader-container").remove();
+            addError("Не удалось загрузить информацию о сотруднике")
+        },
+        success: function(staffInfo) {
+            if (staffInfo.location === null) {
+                addError("Кабинет сотрудника не указан");
+            }
+            if (staffInfo instanceof Array) {
+                addError("Информация о сотруднике не указана");
+            }
+            $.ajax('/getCabinetLocation', {
+                type: "GET",
+                data: {"cabinet": staffInfo.location[0]},
+                dataType: "json",
+                error: function() {
+                    employeeContainer.children(".employee-loader-container").remove();
+                    addError("Не удалось найти кабинет");
+                },
+                success: function(location) {
+                    employeeContainer.children(".employee-loader-container").remove();
+                    navigation.hideNavigationMenu();
+                    locateEmployeeBuilding(location, staffInfo);
+                }
+            });
+        }
+    });
+});
 
 /** Карта этажа */
 
@@ -152,52 +259,4 @@ $('#floor-close').click(function() {
         $(this).css("visibility", "hidden").show();
     });
     main.activate();
-});
-
-/** Навигация */
-
-var navigation = navigation();
-
-$('#menu-button-search').click(navigation.showNavigationMenu);
-$('#search-container').on('click', '.search-employee-locate', function (event) {
-    var employeeID = $(event.target).data("id");
-    var employeeContainer = $(event.target.parentNode);
-    $.ajax('/phonebook', {
-        type: "GET",
-        data: {"rid" : employeeID},
-        dataType: "json",
-        beforeSend: function() {
-            $("<div />", {
-                "class": "employee-loader loader"
-            }).appendTo($("<div />", {
-                "class": "employee-loader-container"
-            }).appendTo(employeeContainer));
-        },
-        error: function() {
-            employeeContainer.children(".employee-loader-container").remove();
-            addError("Не удалось загрузить информацию о сотруднике")
-        },
-        success: function(staffInfo) {
-            if (staffInfo.location === null) {
-                addError("Кабинет сотрудника не указан");
-            }
-            if (staffInfo instanceof Array) {
-                addError("Информация о сотруднике не указана");
-            }
-            $.ajax('/getCabinetLocation', {
-                type: "GET",
-                data: {"cabinet": staffInfo.location[0]},
-                dataType: "json",
-                error: function() {
-                    employeeContainer.children(".employee-loader-container").remove();
-                    addError("Не удалось найти кабинет");
-                },
-                success: function(location) {
-                    employeeContainer.children(".employee-loader-container").remove();
-                    navigation.hideNavigationMenu();
-                    locateEmployeeBuilding(location, staffInfo);
-                }
-            });
-        }
-    });
 });

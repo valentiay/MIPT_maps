@@ -35,3 +35,14 @@ def get_cabinet_location(request):
 def phonebook(request):
     print "GET %s: Phonebook request. Proxy server is malfunctioning" % reverse(phonebook)
     raise Http404
+
+
+def manage_id(request, map_id):
+    context = {
+        "map_id": map_id,
+    }
+    return HttpResponse(render(request, 'manage.html', context))
+
+
+def manage(request):
+    return manage_id(request, 0)

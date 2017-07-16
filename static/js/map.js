@@ -25,6 +25,7 @@ function map(container) {
 
     var _context;
     var _mapBlock;
+
     function renderMap(data, width, height) {
         _container.html("");
         _mapInfo = data;
@@ -235,7 +236,7 @@ function map(container) {
     }
 
     // Обработчики событий
-    _container.mouseup(moveInterruption);
+    $(document.body).mouseup(moveInterruption);
     _container.dblclick(moveInterruption);
     _container.click(moveInterruption);
 
@@ -279,6 +280,7 @@ function map(container) {
     /** Обработка клика по карте */
 
     function addIndicator(indicator) {
+        indicator.data("clearObject", clearObject);
         _container.append(indicator);
         setIndicatorPosition(indicator);
     }
