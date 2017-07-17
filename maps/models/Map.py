@@ -53,7 +53,7 @@ class Map(models.Model):
                 object_dict["vertices"].append({
                     "x": vertex.x,
                     "y": vertex.y,
-                    "order": vertex.order,
+                    "id": vertex.id,
                 })
             map_dict["objects"].append(object_dict)
 

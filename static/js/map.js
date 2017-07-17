@@ -41,12 +41,12 @@ function map(container) {
         MAX_X = width;
         MAX_Y = height;
         if (MAX_X / MAX_Y < _container.width() / _container.height()) {
-            _mapBlock.css("width", "100%");
+            _mapBlock.css("width", _container.width() + "px");
             _mapBlock.css("height", _container.width() * MAX_Y / MAX_X);
             MAGIC_RATIO = MAX_X / _container.width();
         } else {
             _mapBlock.css("width", _container.height() * MAX_X / MAX_Y);
-            _mapBlock.css("height", "100%");
+            _mapBlock.css("height", _container.height() + "px");
             MAGIC_RATIO = MAX_Y / _container.height();
         }
         _container.data("isActive", true);

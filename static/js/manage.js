@@ -1,6 +1,13 @@
 var manageMapContainer = $('#manage-map');
 var manageMap = map(manageMapContainer);
-var controls = $('#controls');
+var list = $('#list');
+
+function pointObjectVertices (object) {
+    for (var i = 0; i < object.vertices.length; i++) {
+        var point = createPoint(object.vertices[i].x, object.vertices[i].y, 1);
+        manageMap.addIndicator(point);
+    }
+}
 
 $.ajax('/getMap', {
     type: "GET",
@@ -17,26 +24,28 @@ $.ajax('/getMap', {
             var height = img.height;
             manageMap.renderMap(data, width, height);
 
-            controls.append("<h1>" + data.title + "</h1>");
+            list.append("<h1>" + data.title + "</h1>");
 
             if(data.allFloors.length !== 0) {
-                controls.append("<h2>Другие этажи</h2><ul>");
+                list.append("<h2>Другие этажи</h2><ul>");
                 for (var i = 0; i < data.allFloors.length; i++) {
-                    controls.append('<li><a href = "/manage/' + data.allFloors[i].mapID + '"> Этаж ' + data.allFloors[i].floor + '</a></li>');
+                    list.append('<li><a href = "/manage/' + data.allFloors[i].mapID + '"> Этаж ' + data.allFloors[i].floor + '</a></li>');
                 }
-                controls.append("</ul>");
+                list.append("</ul>");
             }
 
             if(data.objects.length !== 0) {
-                controls.append("<h2>Объекты</h2><ul>");
+                list.append("<h2>Объекты</h2><ul>");
                 for (i = 0; i < data.objects.length; i++) {
                     manageMap.fillObject(data.objects[i]);
+                    pointObjectVertices(data.objects[i]);
+
                     if (data.objects[i].mapID !== null)
-                        controls.append('<li><a href = "/manage/' + data.objects[i].mapID + '">' + data.objects[i].location + '</a></li>');
+                        list.append('<li><a href = "/manage/' + data.objects[i].mapID + '">' + data.objects[i].location + '</a></li>');
                     else
-                        controls.append('<li>' + data.objects[i].location + '</li>');
+                        list.append('<li>' + data.objects[i].location + '</li>');
                 }
-                controls.append("</ul>");
+                list.append("</ul>");
             }
         });
     }
@@ -44,3 +53,70 @@ $.ajax('/getMap', {
 
 $('#menu-button-increase-scale').click(manageMap.increaseScale);
 $('#menu-button-decrease-scale').click(manageMap.decreaseScale);
+
+
+/** **/
+
+var objectAddInProcess = false;
+var addedObject;
+var vertexOrder = 1;
+
+$('#add').click(function() {
+    $('#add').hide();
+    if (!objectAddInProcess) {
+        manageMap.clear();
+        objectAddInProcess = true;
+        $('#add-menu').show();
+        vertexOrder = 1;
+        addedObject = {
+            title: "",
+            vertices: []
+        }
+    }
+});
+
+$('#location').change(function() {
+    if (!objectAddInProcess)
+        return;
+    addedObject.title = $('#location').val();
+});
+
+manageMapContainer.click(function(event) {
+    if (!objectAddInProcess)
+        return;
+
+    var cords = manageMap.toCords(event.pageX - manageMapContainer.offset().left,
+                                  event.pageY - manageMapContainer.offset().top);
+    var vertex = {
+        x: cords.x,
+        y: cords.y,
+        order: vertexOrder++,
+        mapID: MAP_ID
+    };
+    addError("Вершина добавлена");
+
+    addedObject.vertices.push(vertex);
+});
+
+$('#add-save').click(function() {
+    if (!objectAddInProcess)
+        return;
+
+    console.log(addedObject);
+
+    $.ajax({
+        url: "/addObject",
+        method: "POST",
+        data: {
+            "mapID": MAP_ID,
+            "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
+            "object": JSON.stringify(addedObject)
+        },
+        error: function() {
+            addError("Сервер ответил ошибкой");
+        },
+        success: function() {
+            addError("Объект успешно добавлен");
+        }
+    });
+});

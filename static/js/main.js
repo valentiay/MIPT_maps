@@ -7,7 +7,7 @@ var main = map(mainContainer);
 // Загрузка главной карты
 $.ajax('/getMap', {
     type: "GET",
-    data: {"mapID": 0},
+    data: {"mapID": 1},
     dataType: "json",
     error: function() {
         addError("Не удалось загрузить карту, перезагрузите страницу через некоторое время")

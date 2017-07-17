@@ -1,4 +1,5 @@
 var ARROW_SIZE = 28;
+var POINT_RAD = 3;
 
 /** Работа с указателями */
 
@@ -60,3 +61,15 @@ $(document.body).on('click', '.pointer-close', function (event) {
     container.data("clearObject")(container.data("object"));
     container.remove();
 });
+
+/** Работа с точками */
+
+function createPoint(x, y, pointData) {
+    var point = $("<div />", {
+        "class": "point indicator"
+    });
+    point.data("x-cord", x).data("y-cord", y);
+    point.data("x-delta", -POINT_RAD).data("y-delta", POINT_RAD);
+    point.data("pointData", pointData);
+    return point;
+}

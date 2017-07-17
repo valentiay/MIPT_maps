@@ -600,7 +600,30 @@ body{
     color: #fff
 }
 
+#list {
+    max-height: 80%;
+}
+
+#buttons {
+    height: 20%;
+}
+
+#add-menu {
+    display: none;
+}
+
 #controls li {
     margin: 5px;
     cursor: pointer;
+}
+
+.point {
+    float: left;
+    position: absolute;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    width: 6px;
+    height: 6px;
+    background-color: #005892;
 }

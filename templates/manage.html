@@ -9,7 +9,17 @@
 <body>
 
 <div id="manage-map"></div>
-<div id="controls"></div>
+<div id="controls">
+    <div id="list"></div>
+    <div id="buttons">
+        <button id="add">Добавить объект</button>
+        <div id="add-menu">
+            {% csrf_token %}
+            <input type="text" id="location" placeholder="Назание объекта">
+            <button id="add-save">Сохранить</button>
+        </div>
+    </div>
+</div>
 
 <div class="menu-button" id="menu-button-increase-scale"></div>
 <div class="menu-button" id="menu-button-decrease-scale"></div>
