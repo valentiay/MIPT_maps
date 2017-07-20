@@ -102,7 +102,9 @@ $('#add-save').click(function() {
     if (!objectAddInProcess)
         return;
 
-    console.log(addedObject);
+    $('#add-menu').hide();
+    $('#add').show();
+    objectAddInProcess = false;
 
     $.ajax({
         url: "/addObject",

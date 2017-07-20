@@ -17,6 +17,13 @@
     font-family: HelveticaNeueRoman, sans-serif;
     -webkit-user-drag: none;
     -webkit-user-select: none;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+html, body {
+    height: 100%;
 }
 
 ::-webkit-scrollbar-button {
@@ -52,14 +59,15 @@
 body{
     overflow: hidden;
     margin: 0;
-    height: 100vh;
+    height: 100%;
+    font-size: 16px;
 }
 
 #map{
     overflow: hidden;
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-position: center;
 }
 
@@ -136,12 +144,12 @@ body{
 .pointer-info{
     display: inline-block;
     vertical-align: top;
-    padding: 8px 7px 5px 7px;
+    padding: 7px 7px 6px 7px;
     max-width: 200px;
-    min-height: 16px;
+    min-height: 17px;
     background-color: #000;
     color: #FFF;
-    font-size: 16px;
+    font-size: 15px;
     font-family: HelveticaNeueCyr, sans-serif;
     white-space: normal;
 }
@@ -191,6 +199,8 @@ body{
     padding: 0 20px;
     width: 100px;
     height: calc(100% - 40px);
+    height: -moz-calc(100% - 40px);
+    height: -webkit-calc(100% - 40px);
 }
 
 #floor-list p{
@@ -213,6 +223,8 @@ body{
     position: absolute;
     left: -12px;
     top: calc(50% - 5px);
+    top: -moz-calc(50% - 5px);
+    top: -webkit-calc(50% - 5px);
     border: solid transparent 5px;
     border-left-color: #1D9FBF;
 }
@@ -221,6 +233,8 @@ body{
     float: left;
     margin: 10px 50px;
     width: calc(100% - 160px);
+    width: -moz-calc(100% - 160px);
+    width: -webkit-calc(100% - 160px);
     min-height: 30px;
     text-align: center;
     font-size: 25px;
@@ -235,7 +249,11 @@ body{
     overflow: hidden;
     margin: 0 10px 10px 10px;
     width: calc(100% - 160px);
+    width: -moz-calc(100% - 160px);
+    width: -webkit-calc(100% - 160px);
     height: calc(100% - 80px);
+    height: -moz-calc(100% - 80px);
+    height: -webkit-calc(100% - 80px);
     background-size: contain;
     background-color: rgba(0, 0, 0, 0.7);
 }
@@ -277,6 +295,8 @@ body{
     float: left;
     width: 100%;
     height: calc(100% - 160px);
+    height: -moz-calc(100% - 160px);
+    height: -webkit-calc(100% - 160px);
     overflow-y: scroll;
     overflow-x: visible;
 }
@@ -299,19 +319,24 @@ body{
     border-bottom: 1px solid #FFFFFF;
     padding: 5px;
     width: calc(100% - 60px);
+    width: -moz-calc(100% - 60px);
+    width: -webkit-calc(100% - 60px);
     height: 38px;
     background-color: transparent;
     font-size: 30px;
     font-family: Helvetica, sans-serif;
     font-weight: bold;
     color: #FFFFFF;
+    -webkit-user-select: auto;
 }
 
 #search-input-text:focus{
     outline: none;
 }
 
-#search-input-text::placeholder{
+#search-input-text::placeholder,
+#search-input-text::-webkit-input-placeholder,
+#search-input-text::-moz-placeholder {
     font-weight: bold;
     font-family: HelveticaBold, sans-serif;
     color: #4F8FB5;
@@ -414,6 +439,8 @@ body{
 
 .search-employee{
     max-width: calc(100% - 58px);
+    max-width: -moz-calc(100% - 58px);
+    max-width: -webkit-calc(100% - 58px);
 }
 
 .search-department-active{
@@ -446,6 +473,8 @@ body{
     float: left;
     margin-left: 20px;
     width: calc(100% - 20px);
+    width: -moz-calc(100% - 20px);
+    width: -webkit-calc(100% - 20px);
 }
 
 .search-department:hover{
@@ -490,11 +519,16 @@ body{
 	animation: loader 0.5s infinite linear;
 }
 
+/*noinspection CssOverwrittenProperties*/
 .search-loader-container {
     z-index: 10500000;
     float:left;
     padding: 0 calc(50% - 20px);
+    padding: 0 -moz-calc(50% - 20px);
+    padding: 0 -webkit-calc(50% - 20px);
     width: calc(20px);
+    width: -moz-calc(20px);
+    width: -webkit-calc(20px);
 }
 
 .search-loader {
@@ -522,10 +556,13 @@ body{
 	border-right-color: transparent;
 }
 
+/*noinspection ALL*/
 .navigation-loader-container {
     z-index: 10500000;
     float: left;
     margin: 0 calc(50% - 25px);
+    margin: 0 -moz-calc(50% - 25px);
+    margin: 0 -webkit-calc(50% - 25px);
     width: 50px;
 }
 
@@ -542,7 +579,11 @@ body{
     z-index: 10500000;
     position:fixed;
     left: calc(50% - 25px);
+    left: -moz-calc(50% - 25px);
+    left: -webkit-calc(50% - 25px);
     top: calc(50% - 25px);
+    top: -moz-calc(50% - 25px);
+    top: -webkit-calc(50% - 25px);
     width: 50px;
 }
 
@@ -557,6 +598,8 @@ body{
 #errors {
     position: fixed;
     left: calc(50% - 100px);
+    left: -moz-calc(50% - 100px);
+    left: -webkit-calc(50% - 100px);
     top: 0;
     width: 200px;
     z-index: 11000000;
@@ -578,7 +621,9 @@ body{
 #manage-map {
     float: left;
     width: calc(100% - 250px);
-    height: 100vh;
+    width: -moz-calc(100% - 250px);
+    width: -webkit-calc(100% - 250px);
+    height: 100%;
     overflow: hidden;
     z-index: 1;
 }
