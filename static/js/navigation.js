@@ -192,16 +192,22 @@ function navigation() {
     function search() {
         if (_staff === undefined)
             return;
-        var searchStr = $('#search-input-text').val();
-        var highlightedStr = '<span class="search-found">' + searchStr + '</span>';
+        var request = $('#search-input-text').val().toLowerCase();
         var searchListStaff = $('#search-list-staff');
         searchListStaff.html('<div class="search-column-h2">Сотрудники</div>');
+
         for (var i = 0; i < _staff.length; i++) {
-            if (_staff[i].full_name.indexOf(searchStr) + 1) {
+            var index = 0;
+            var employeeText = _staff[i].full_name;
+            if ((index = employeeText.toLowerCase().indexOf(request)) + 1) {
                 var employee = $("<div />", {
                     "class": "search-employee"
                 });
-                employee.html(_staff[i].full_name.replace(searchStr, highlightedStr));
+                employee.html(
+                    employeeText.substring(0, index) +
+                    "<span class='search-found'>" +
+                    employeeText.substring(index, index + request.length) +
+                    "</span>" + employeeText.substring(index + request.length));
 
                 var employeeContainer = $("<div />", {
                     "class": "search-employee-container"
@@ -213,16 +219,20 @@ function navigation() {
             }
         }
 
-        searchStr = searchStr.toUpperCase();
-        highlightedStr = '<span class="search-found">' + searchStr + '</span>';
+        request = request.toUpperCase();
         var searchListDivisions = $('#search-list-divisions');
         searchListDivisions.html('<div class="search-column-h2">Подразделения</divclass>');
         for (i = 0; i < _departments.length; i++) {
-            if (_departments[i].dept_name.toUpperCase().indexOf(searchStr) + 1) {
+            var deptText = _departments[i].dept_name.toUpperCase();
+            if ((index = deptText.indexOf(request)) + 1) {
                 var dept = $("<div />",{
                     "class": "search-department"
                 });
-                dept.html(_departments[i].dept_name.toUpperCase().replace(searchStr, highlightedStr));
+                dept.html(
+                    deptText.substring(0, index) +
+                    "<span class='search-found'>" +
+                    deptText.substring(index, index + request.length) +
+                    "</span>" + deptText.substring(index + request.length));
 
                 var deptContainer = $("<div />", {
                     "class": "search-department-container"

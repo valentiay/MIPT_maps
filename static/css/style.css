@@ -355,13 +355,24 @@ body{
     outline: none;
 }
 
-#search-input-text::placeholder,
-#search-input-text::-webkit-input-placeholder,
-#search-input-text::-moz-placeholder {
+#search-input-text::-webkit-input-placeholder{
     font-weight: bold;
-    font-family: HelveticaBold, sans-serif;
+    font-family: Helvetica, sans-serif;
     color: #4F8FB5;
 }
+
+#search-input-text::placeholder {
+    font-weight: bold;
+    font-family: Helvetica, sans-serif;
+    color: #4F8FB5;
+}
+
+#search-input-text::-moz-placeholder {
+    font-weight: bold;
+    font-family: Helvetica, sans-serif;
+    color: #4F8FB5;
+}
+
 
 #search-input-submit{
     float: left;
