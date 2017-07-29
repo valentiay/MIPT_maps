@@ -120,25 +120,46 @@ body{
 
 .pointer-container{
     position: absolute;
+    max-width: 50%;
     min-height: 28px;
     overflow: visible;
     white-space: nowrap;
     z-index: 1000000;
 }
 
-.ru{
+.ru, .rd {
     border-left: 5px solid #FD0D0C;
 }
 
-.ru::before{
+.lu, .ld {
+    border-right: 5px solid #FD0D0C;
+}
+
+.ru::before, .lu::before, .rd::before, .ld::before {
     content: '';
     position: absolute;
-    left: -5px;
+    border: solid transparent;
+    border-width: 14px 7px;
+}
+
+.ru::before, .lu::before {
     bottom: -28px;
-    border: 7px solid transparent;
-    border-left: 7px solid #FD0D0C;
-    border-top: 14px solid #FD0D0C;
-    border-bottom-width: 14px;
+    border-top-color: #FD0D0C;
+}
+
+.rd::before, .ld::before {
+    top: -28px;
+    border-bottom-color: #FD0D0C;
+}
+
+.ru::before, .rd::before {
+    left: -5px;
+    border-left-color: #FD0D0C;
+}
+
+.lu::before, .ld::before {
+    right: -5px;
+    border-right-color: #FD0D0C;
 }
 
 .pointer-info{

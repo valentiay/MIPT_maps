@@ -6,18 +6,51 @@ var POINT_RAD = 3;
 // Создает контейнер для указателя с описанием внутри
 function createBasePointer(x, y, description) {
     var pointerContainer = $("<div />", {
-        "class": "pointer-container ru indicator"
+        "class": "pointer-container indicator"
     });
     pointerContainer.data('x-cord', x).data('y-cord', y);
-    pointerContainer.data('x-delta', 0).data('y-delta', -ARROW_SIZE);
 
-    var pointerInfo = $("<div />",{
+    var pointerInfo = $("<div />", {
         "class": "pointer-info"
     });
     pointerInfo.html(description);
-    pointerInfo.css("min-width", pointerInfo.width() + 'px');
 
     pointerContainer.append(pointerInfo);
+
+    pointerContainer.data("onMove", function() {
+        var parentMap = pointerContainer.parent();
+        var offset = pointerContainer.offset();
+        var parentOffset = pointerContainer.parent().offset();
+        var x = offset.left - pointerContainer.data("x-delta") - parentOffset.left;
+        var y = offset.top - pointerContainer.data("y-delta") - pointerContainer.height() - parentOffset.top;
+        var r = true;
+        var u = true;
+        if (x + pointerContainer.width() > parentMap.width()) {
+            r = false;
+        }
+        if (y < 0) {
+            u = false;
+        }
+
+        pointerContainer.removeClass("ru");
+        pointerContainer.removeClass("rd");
+        pointerContainer.removeClass("lu");
+        pointerContainer.removeClass("ld");
+
+        if (r && u) {
+            pointerContainer.addClass("ru");
+            pointerContainer.data('x-delta', 0).data('y-delta', -ARROW_SIZE);
+        } else if (u) {
+            pointerContainer.addClass("lu");
+            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', -ARROW_SIZE);
+        } else if (r) {
+            pointerContainer.addClass("rd");
+            pointerContainer.data('x-delta', 0).data('y-delta', ARROW_SIZE);
+        } else {
+            pointerContainer.addClass("ld");
+            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', ARROW_SIZE);
+        }
+    });
 
     return pointerContainer;
 }

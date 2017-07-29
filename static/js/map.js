@@ -29,6 +29,9 @@ function map(container) {
     function renderMap(data, width, height) {
         _container.html("");
         _mapInfo = data;
+        _scale = 1;
+        _originX = 0;
+        _originY = 0;
         _mapBlock = $("<canvas />", {
             "class": "map-block"
         });
@@ -90,6 +93,21 @@ function map(container) {
         var infoX = objPx.x + xDelta;
         var infoY = objPx.y + yDelta - indicator.height();
 
+        indicator.css("left", infoX + 'px');
+        indicator.css("top", infoY + 'px');
+
+        if (indicator.data("onMove") !== undefined) {
+            indicator.data("onMove")();
+        }
+
+        xCord = indicator.data('x-cord');
+        yCord = indicator.data('y-cord');
+        xDelta = indicator.data('x-delta');
+        yDelta = indicator.data('y-delta');
+        objPx = toPx(xCord, yCord);
+
+        infoX = objPx.x + xDelta;
+        infoY = objPx.y + yDelta - indicator.height();
         indicator.css("left", infoX + 'px');
         indicator.css("top", infoY + 'px');
     }
@@ -282,6 +300,7 @@ function map(container) {
     function addIndicator(indicator) {
         indicator.data("clearObject", clearObject);
         _container.append(indicator);
+        indicator.width(indicator.width());
         setIndicatorPosition(indicator);
     }
 
