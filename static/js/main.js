@@ -282,13 +282,16 @@ function bindObjectPointing(map) {
         console.log(cords);
 
         var objects = map.getObjectsList();
-        for (var i = 0; i < objects.length; i++) {
-            var vertices = objects[i].vertices;
-            var intersections = polygonContainsDot(vertices, cords);
-            if (intersections % 2 === 1) {
-                pointObject(objects[i]);
-                map.fillObject(objects[i]);
-                return;
+        var object;
+        for (var key in objects) {
+            if (objects.hasOwnProperty(key)) {
+                object = objects[key];
+                var vertices = object.vertices;
+                if (polygonContainsDot(vertices, cords)) {
+                    pointObject(object);
+                    map.fillObject(object);
+                    return;
+                }
             }
         }
     });

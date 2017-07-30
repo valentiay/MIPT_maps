@@ -10,9 +10,13 @@
 
 <div id="manage-map"></div>
 <div id="controls">
-    <div id="list"></div>
-    <div id="buttons">
+    <div id="floors-list"></div>
+    <div id="objects-list"></div>
+    <div id="editing">
+        <div id="buttons">
+        <button id="highlight-all">Подсветить все</button>
         <button id="add">Добавить объект</button>
+        </div>
         <div id="add-menu">
             {% csrf_token %}
             <input type="text" id="location" placeholder="Назание объекта">

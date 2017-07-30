@@ -1,6 +1,5 @@
 var manageMapContainer = $('#manage-map');
 var manageMap = map(manageMapContainer);
-var list = $('#list');
 
 function pointObjectVertices (object) {
     for (var i = 0; i < object.vertices.length; i++) {
@@ -8,6 +7,70 @@ function pointObjectVertices (object) {
         manageMap.addIndicator(point);
     }
 }
+
+function fillAllObjects() {
+    manageMap.clear();
+    var objects = manageMap.getObjectsList();
+    for (var key in objects) {
+        if (objects.hasOwnProperty(key)) {
+            manageMap.fillObject(objects[key]);
+        }
+    }
+}
+
+function listFloors(floors) {
+    var floorsList = $('#floors-list');
+    if(floors.length !== 0) {
+        floorsList.append("<h2>Другие этажи</h2><ul>");
+        for (var i = 0; i < floors.length; i++) {
+            floorsList.append('<li><a href = "/manage/' + floors[i].mapID + '"> Этаж ' + floors[i].floor + '</a></li>');
+        }
+        floorsList.append("</ul>");
+    }
+}
+
+function listObjects(objects) {
+    var objectsList = $('#objects-list');
+
+    function appendToList(object) {
+        var objectContainer = $("<li />", {
+            "text": object.location
+        });
+
+        if (object.mapID !== null && object.mapID !== undefined) {
+            objectContainer.append(" (");
+            objectContainer.append($("<a />", {
+                "href": "/manage/" + object.mapID,
+                "text": "Править"
+            }));
+            objectContainer.append(")");
+        }
+        objectContainer.data("object", object);
+        objectsList.append(objectContainer);
+    }
+
+    objectsList.html("");
+    objectsList.append("<h2>Объекты</h2><ul>");
+    if (objects.length !== undefined) {
+        for (var i = 0; i < objects.length; i++) {
+            appendToList(objects[i]);
+        }
+    } else {
+        for (var key in objects) {
+            if (objects.hasOwnProperty(key)) {
+                appendToList(objects[key]);
+            }
+        }
+    }
+    objectsList.append("</ul>");
+}
+
+$('#objects-list').on("click", "li", function(event) {
+    var object = $(event.target).data("object");
+    manageMap.clear();
+    manageMap.fillObject(object);
+    pointObjectVertices(object);
+});
 
 $.ajax('/getMap', {
     type: "GET",
@@ -23,30 +86,10 @@ $.ajax('/getMap', {
             var width = img.width;
             var height = img.height;
             manageMap.renderMap(data, width, height);
-
-            list.append("<h1>" + data.title + "</h1>");
-
-            if(data.allFloors.length !== 0) {
-                list.append("<h2>Другие этажи</h2><ul>");
-                for (var i = 0; i < data.allFloors.length; i++) {
-                    list.append('<li><a href = "/manage/' + data.allFloors[i].mapID + '"> Этаж ' + data.allFloors[i].floor + '</a></li>');
-                }
-                list.append("</ul>");
-            }
-
-            if(data.objects.length !== 0) {
-                list.append("<h2>Объекты</h2><ul>");
-                for (i = 0; i < data.objects.length; i++) {
-                    manageMap.fillObject(data.objects[i]);
-                    pointObjectVertices(data.objects[i]);
-
-                    if (data.objects[i].mapID !== null)
-                        list.append('<li><a href = "/manage/' + data.objects[i].mapID + '">' + data.objects[i].location + '</a></li>');
-                    else
-                        list.append('<li>' + data.objects[i].location + '</li>');
-                }
-                list.append("</ul>");
-            }
+            $('#controls').prepend("<h1>" + data.title + "</h1>");
+            fillAllObjects();
+            listFloors(data.allFloors);
+            listObjects(data.objects);
         });
     }
 });
@@ -62,7 +105,7 @@ var addedObject;
 var vertexOrder = 1;
 
 $('#add').click(function() {
-    $('#add').hide();
+    $('#buttons').hide();
     if (!objectAddInProcess) {
         manageMap.clear();
         objectAddInProcess = true;
@@ -101,12 +144,13 @@ $('#add-save').click(function() {
         return;
 
     $('#add-menu').hide();
-    $('#add').show();
+    $('#buttons').show();
     objectAddInProcess = false;
 
     $.ajax({
         url: "/addObject",
         method: "POST",
+        dataType: "json",
         data: {
             "mapID": MAP_ID,
             "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
@@ -115,8 +159,15 @@ $('#add-save').click(function() {
         error: function() {
             addError("Сервер ответил ошибкой");
         },
-        success: function() {
+        success: function(data) {
             addError("Объект успешно добавлен");
+            addedObject.objID = data.objID;
+            addedObject.location = addedObject.title;
+            manageMap.addObject(addedObject);
+            listObjects(manageMap.getObjectsList());
+            fillAllObjects();
         }
     });
 });
+
+$('#highlight-all').click(fillAllObjects);

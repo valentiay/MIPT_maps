@@ -673,16 +673,22 @@ body{
     overflow: scroll;
 }
 
-#controls  a {
+#controls a {
     color: #fff
 }
 
-#list {
-    max-height: 80%;
+#floors-list {
+    max-height: 20%;
+    overflow: auto;
 }
 
-#buttons {
-    height: 20%;
+#objects-list {
+    max-height: 50%;
+    overflow: auto;
+}
+
+#editing {
+    height: 30%;
 }
 
 #add-menu {

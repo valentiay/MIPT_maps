@@ -61,6 +61,10 @@ def manage(request):
 def add_object(request):
     new_object_info = json.loads(request.POST["object"])
     map_id = request.POST["mapID"]
+
+    if len(new_object_info["vertices"]) <= 0 or new_object_info["title"] == "":
+        return HttpResponse(status=406)
+
     parent_map = Map.objects.get(id=map_id)
 
     new_object = Object()
@@ -77,4 +81,7 @@ def add_object(request):
         vertex.order = vertex_info["order"]
         vertex.save()
 
-    return HttpResponse("OK")
+    response = {
+        "objID": new_object.id,
+    }
+    return HttpResponse(json.dumps(response))

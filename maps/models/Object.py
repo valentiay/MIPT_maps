@@ -4,7 +4,6 @@ import json
 
 from django.db import models
 
-
 class Object(models.Model):
     title = models.CharField(max_length=200)
     floor = models.IntegerField(blank=True, null=True)

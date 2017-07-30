@@ -4,8 +4,6 @@ function map(container) {
     /** Инициализация и обновление карты */
     // Ссылка на блок с картой
     var _container = container;
-    // Загруженная информация по карте
-    var _mapInfo;
 
     // Масшатаб - отношение ширины карты в пикселях к ширине контейнера
     var _scale = 1;
@@ -26,9 +24,10 @@ function map(container) {
     var _context;
     var _mapBlock;
 
+    var _objects;
+
     function renderMap(data, width, height) {
         _container.html("");
-        _mapInfo = data;
         _scale = 1;
         _originX = 0;
         _originY = 0;
@@ -39,7 +38,7 @@ function map(container) {
         _mapBlock.attr("height", height);
         _context = _mapBlock.get(0).getContext("2d");
         _container.append(_mapBlock);
-        _mapBlock.css("background-image", 'url(' + _mapInfo.mapSRC + ')');
+        _mapBlock.css("background-image", 'url(' + data.mapSRC + ')');
         _container.data("isActive", false);
         MAX_X = width;
         MAX_Y = height;
@@ -51,6 +50,11 @@ function map(container) {
             _mapBlock.css("width", _container.height() * MAX_X / MAX_Y);
             _mapBlock.css("height", _container.height() + "px");
             MAGIC_RATIO = MAX_Y / _container.height();
+        }
+        var objects = data.objects;
+        _objects = {};
+        for(var i = 0; i < objects.length; i++) {
+            _objects[objects[i].objID] = objects[i];
         }
         _container.data("isActive", true);
     }
@@ -322,16 +326,11 @@ function map(container) {
     _container.on("click", ".map-block", processClick);
 
     function getObjectByID(objectId) {
-        var object;
         // TODO
-        for (var i = 0; i < _mapInfo.objects.length; i++) {
-            if (_mapInfo.objects[i].objID === objectId) {
-                object = _mapInfo.objects[i];
-                break;
-            }
-        }
+        var object = _objects[objectId];
         if (object === undefined) {
             console.error('Wrong object ID');
+            addError("При поиске корпуса произошла ошибка")
         }
         return object;
     }
@@ -364,13 +363,20 @@ function map(container) {
             return ans;
         },
         getObjectsList: function() {
-            return _mapInfo.objects
+            return _objects;
         },
         clearObject: clearObject,
         fillObject: fillObject,
         clear: clear,
         getContainer: function() {
             return _container;
+        },
+        addObject: function(object) {
+            if (object.objID === undefined) {
+                console.error("Wrong object ID");
+                return;
+            }
+            _objects[object.objID] = object;
         }
     }
 }
