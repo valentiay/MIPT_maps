@@ -304,73 +304,19 @@ function map(container) {
         setIndicatorPosition(indicator);
     }
 
-    function getAvgObjectCords(object) {
-        var x = 0, y = 0, i;
-        for (i = 0; i < object.vertices.length; i++) {
-            x += object.vertices[i].x;
-            y += object.vertices[i].y;
-        }
-        x /= object.vertices.length;
-        y /= object.vertices.length;
-        var ans = {};
-        ans.x = x;
-        ans.y = y;
-        return ans;
-    }
-
-    function pointBuilding(object) {
-        var avgCords = getAvgObjectCords(object);
-        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
-        pointer.data("object", object);
-        if (object.mapID !== null) {
-            appendWithInsideMap(pointer);
-            pointer.data("mapID", object.mapID);
-            appendWithPhotos(pointer);
-        }
-        appendWithCross(pointer);
-        addIndicator(pointer);
-    }
-
-    function countIntersections(vers, dot) {
-        var intersections = 0;
-        if ((vers[0].y - dot.y)*(vers[vers.length - 1].y - dot.y) < 0
-            && (vers[0].y - vers[vers.length - 1].y !== 0
-            && vers[0].x + (vers[0].x - vers[vers.length - 1].x) * (vers[0].y - dot.y) / (vers[0].y - vers[vers.length - 1].y) > dot.x
-            || vers[0].y - vers[vers.length - 1].y === 0 && vers[0].x > dot.x))
-            intersections++;
-        for (var j = 1; j < vers.length; j++) {
-            if (dot.x < vers[j].x && (vers[j].y - dot.y) * (vers[j - 1].y - dot.y) < 0
-                && (vers[j].y - vers[j - 1].y !== 0
-                && vers[j].x + (vers[j].x - vers[j - 1].x) * (vers[j].y - dot.y) / (vers[j].y - vers[j - 1].y) > dot.x
-                || vers[j].y - vers[j - 1].y === 0 && vers[j].x > dot.x))
-                intersections++;
-        }
-        return intersections;
-    }
-
     function processClick(event) {
         if (!_container.data("isActive"))
             return;
         if (_blockClick)
             return;
         if (!_clickDelay) _clickDelay = setTimeout(function () {
+            _container.trigger("mapClick", [
+                toCords(event.pageX - _container.offset().left,
+                    event.pageY - _container.offset().top)
+            ]);
+
             clearTimeout(_clickDelay);
             _clickDelay = 0;
-
-            clear();
-            var cords = toCords(event.pageX - _container.offset().left,
-                event.pageY - _container.offset().top);
-            console.log(cords);
-
-            for (var i = 0; i < _mapInfo.objects.length; i++) {
-                var vertices = _mapInfo.objects[i].vertices;
-                var intersections = countIntersections(vertices, cords);
-                if (intersections % 2 === 1) {
-                    pointBuilding(_mapInfo.objects[i]);
-                    fillObject(_mapInfo.objects[i]);
-                    return;
-                }
-            }
         }, 200);
     }
     _container.on("click", ".map-block", processClick);
@@ -403,7 +349,6 @@ function map(container) {
         renderMap: renderMap,
         addIndicator: addIndicator,
         getObjectByID: getObjectByID,
-        getAvgObjectCords: getAvgObjectCords,
         toPx: toPx,
         toCords: toCords,
         getMaxCords: function() {
@@ -423,6 +368,9 @@ function map(container) {
         },
         clearObject: clearObject,
         fillObject: fillObject,
-        clear: clear
+        clear: clear,
+        getContainer: function() {
+            return _container;
+        }
     }
 }

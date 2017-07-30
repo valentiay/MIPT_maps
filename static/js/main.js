@@ -32,7 +32,7 @@ $('#menu-button-decrease-scale').click(main.decreaseScale);
 function locateEmployeeBuilding(location, staffInfo) {
     main.clear();
     var object = main.getObjectByID(location.buildingID);
-    var cords = main.getAvgObjectCords(object);
+    var cords = getAvgCords(object.vertices);
 
     // Создание окна здания
     var pointer = createBasePointer(cords.x, cords.y,
@@ -74,7 +74,7 @@ function locateEmployeeCabinet(cabinetID, staffInfo) {
     floorMap.clear();
 
     var object = floorMap.getObjectByID(cabinetID);
-    var cords = floorMap.getAvgObjectCords(object);
+    var cords = getAvgCords(object.vertices);
 
     var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
         + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
@@ -260,3 +260,39 @@ $('#floor-close').click(function() {
     });
     main.activate();
 });
+
+
+function bindObjectPointing(map) {
+    function pointObject(object) {
+        var avgCords = getAvgCords(object.vertices);
+        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
+        pointer.data("object", object);
+        if (object.mapID !== null) {
+            appendWithInsideMap(pointer);
+            pointer.data("mapID", object.mapID);
+            appendWithPhotos(pointer);
+        }
+        appendWithCross(pointer);
+        map.addIndicator(pointer);
+    }
+
+    var container = map.getContainer();
+    container.on("mapClick", function(event, cords) {
+        map.clear();
+        console.log(cords);
+
+        var objects = map.getObjectsList();
+        for (var i = 0; i < objects.length; i++) {
+            var vertices = objects[i].vertices;
+            var intersections = polygonContainsDot(vertices, cords);
+            if (intersections % 2 === 1) {
+                pointObject(objects[i]);
+                map.fillObject(objects[i]);
+                return;
+            }
+        }
+    });
+}
+
+bindObjectPointing(main);
+bindObjectPointing(floorMap);

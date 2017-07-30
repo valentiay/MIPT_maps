@@ -81,12 +81,10 @@ $('#location').change(function() {
     addedObject.title = $('#location').val();
 });
 
-manageMapContainer.click(function(event) {
+manageMapContainer.on("mapClick", function(event, cords) {
     if (!objectAddInProcess)
         return;
 
-    var cords = manageMap.toCords(event.pageX - manageMapContainer.offset().left,
-                                  event.pageY - manageMapContainer.offset().top);
     var vertex = {
         x: cords.x,
         y: cords.y,
