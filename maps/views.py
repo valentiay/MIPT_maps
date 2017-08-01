@@ -23,7 +23,8 @@ def get_map(request):
     print "GET %s : Load map %d" % (reverse(get_map), map_id)
 
     requested_map = get_object_or_404(Map, id=map_id)
-    return HttpResponse(requested_map.get_json_info())
+    print requested_map.get_data_json()
+    return HttpResponse(requested_map.get_data_json())
 
 
 @require_GET
@@ -32,7 +33,7 @@ def get_cabinet_location(request):
     print "GET %s : Get cabinet location %s" % (reverse(get_cabinet_location), cabinet)
 
     requested_object = get_object_or_404(Object, title=cabinet)
-    return HttpResponse(requested_object.get_json_info())
+    return HttpResponse(requested_object.get_location_json())
 
 
 @require_GET
@@ -71,7 +72,11 @@ def add_object(request):
     new_object.title = new_object_info["title"]
     new_object.floor = parent_map.floor
     new_object.parent_object = parent_map.object
-    new_object.save()
+    try:
+        new_object.save()
+    except Exception:
+        # TODO
+        return HttpResponse(status=406)
 
     for vertex_info in new_object_info["vertices"]:
         vertex = Vertex()
@@ -81,7 +86,4 @@ def add_object(request):
         vertex.order = vertex_info["order"]
         vertex.save()
 
-    response = {
-        "objID": new_object.id,
-    }
-    return HttpResponse(json.dumps(response))
+    return HttpResponse(json.dumps(new_object.get_data_json()))

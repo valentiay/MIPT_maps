@@ -34,7 +34,7 @@ function listObjects(objects) {
 
     function appendToList(object) {
         var objectContainer = $("<li />", {
-            "text": object.location
+            "text": object.title
         });
 
         if (object.mapID !== null && object.mapID !== undefined) {
@@ -101,7 +101,7 @@ $('#menu-button-decrease-scale').click(manageMap.decreaseScale);
 /** **/
 
 var objectAddInProcess = false;
-var addedObject;
+var newObject;
 var vertexOrder = 1;
 
 $('#add').click(function() {
@@ -111,17 +111,18 @@ $('#add').click(function() {
         objectAddInProcess = true;
         $('#add-menu').show();
         vertexOrder = 1;
-        addedObject = {
+        newObject = {
             title: "",
             vertices: []
-        }
+        };
+        manageMap.addObject(newObject);
     }
 });
 
 $('#location').change(function() {
     if (!objectAddInProcess)
         return;
-    addedObject.title = $('#location').val();
+    newObject.title = $('#location').val();
 });
 
 manageMapContainer.on("mapClick", function(event, cords) {
@@ -136,7 +137,9 @@ manageMapContainer.on("mapClick", function(event, cords) {
     };
     addError("Вершина добавлена");
 
-    addedObject.vertices.push(vertex);
+    newObject.vertices.push(vertex);
+    manageMap.clearObject(newObject);
+    manageMap.fillObject(newObject);
 });
 
 $('#add-save').click(function() {
@@ -147,22 +150,22 @@ $('#add-save').click(function() {
     $('#buttons').show();
     objectAddInProcess = false;
 
-    $.ajax({
-        url: "/addObject",
+    $.ajax("/addObject", {
         method: "POST",
-        dataType: "json",
         data: {
             "mapID": MAP_ID,
             "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
-            "object": JSON.stringify(addedObject)
+            "object": JSON.stringify(newObject)
         },
+        dataType: "json",
         error: function() {
             addError("Сервер ответил ошибкой");
+            manageMap.remove(newObject);
         },
-        success: function(data) {
+        success: function(addedObject) {
             addError("Объект успешно добавлен");
-            addedObject.objID = data.objID;
-            addedObject.location = addedObject.title;
+            addedObject = JSON.parse(addedObject);
+            manageMap.removeObject(newObject);
             manageMap.addObject(addedObject);
             listObjects(manageMap.getObjectsList());
             fillAllObjects();

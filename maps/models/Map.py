@@ -17,7 +17,7 @@ class Map(models.Model):
         return "Map#%d: %s" % (self.id, self.title)
 
     # noinspection PyDictCreation
-    def get_json_info(self):
+    def get_data_dict(self):
         map_dict = {}
         map_dict["mapID"] = self.id
         map_dict["title"] = self.title
@@ -36,25 +36,11 @@ class Map(models.Model):
             child_objects = self.object.child_objects.filter(floor=self.floor).all()
         else:
             child_objects = self.object.child_objects.all()
+
         map_dict["objects"] = []
         for child_object in child_objects:
-            object_dict = {}
-            object_dict["objID"] = child_object.id
-            object_dict["location"] = child_object.title
-            # TODO Refactor
-            try:
-                object_dict["mapID"] = child_object.floor_maps.order_by("floor")[0].id
-            except IndexError:
-                object_dict["mapID"] = None
+            map_dict["objects"].append(child_object.get_data_dict())
+        return map_dict
 
-            object_dict["vertices"] = []
-            vertices = child_object.vertex_set.order_by('order').all()
-            for vertex in vertices:
-                object_dict["vertices"].append({
-                    "x": vertex.x,
-                    "y": vertex.y,
-                    "id": vertex.id,
-                })
-            map_dict["objects"].append(object_dict)
-
-        return json.dumps(map_dict)
+    def get_data_json(self):
+        return json.dumps(self.get_data_dict())

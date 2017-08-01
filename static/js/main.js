@@ -265,7 +265,7 @@ $('#floor-close').click(function() {
 function bindObjectPointing(map) {
     function pointObject(object) {
         var avgCords = getAvgCords(object.vertices);
-        var pointer = createBasePointer(avgCords.x, avgCords.y, object.location);
+        var pointer = createBasePointer(avgCords.x, avgCords.y, object.title);
         pointer.data("object", object);
         if (object.mapID !== null) {
             appendWithInsideMap(pointer);

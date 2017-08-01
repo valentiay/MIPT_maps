@@ -54,7 +54,7 @@ function map(container) {
         var objects = data.objects;
         _objects = {};
         for(var i = 0; i < objects.length; i++) {
-            _objects[objects[i].objID] = objects[i];
+            _objects[objects[i].id] = objects[i];
         }
         _container.data("isActive", true);
     }
@@ -372,11 +372,16 @@ function map(container) {
             return _container;
         },
         addObject: function(object) {
-            if (object.objID === undefined) {
-                console.error("Wrong object ID");
-                return;
+            if (object.id === undefined) {
+                object.id = -123;
             }
-            _objects[object.objID] = object;
+            _objects[object.id] = object;
+        },
+        removeObject: function(object) {
+            if (object.id === undefined) {
+                object.id = -123;
+            }
+            delete _objects[object.id];
         }
     }
 }
