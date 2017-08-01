@@ -17,6 +17,9 @@ function createBasePointer(x, y, description) {
 
     pointerContainer.append(pointerInfo);
 
+    pointerContainer.addClass("ru");
+    pointerContainer.data("x-delta", 0).data("y-delta", 0);
+
     pointerContainer.data("onMove", function() {
         var parentMap = pointerContainer.parent();
         var offset = pointerContainer.offset();
@@ -32,23 +35,63 @@ function createBasePointer(x, y, description) {
             u = false;
         }
 
-        pointerContainer.removeClass("ru");
-        pointerContainer.removeClass("rd");
-        pointerContainer.removeClass("lu");
-        pointerContainer.removeClass("ld");
+        function clearClasses() {
+            pointerContainer.removeClass("ru");
+            pointerContainer.removeClass("rd");
+            pointerContainer.removeClass("lu");
+            pointerContainer.removeClass("ld");
+        }
+
+        function flipLeft() {
+            if (pointerContainer.hasClass("ru") || pointerContainer.hasClass("rd")) {
+                var buttons = [];
+                var curr;
+                while ((curr = pointerContainer.children(":last")).hasClass("pointer-button")) {
+                    buttons.push(curr.detach());
+                }
+                pointerContainer.children(".pointer-info").css("margin-right", "0px");
+                pointerContainer.children(".pointer-info").css("margin-left", "1px");
+                while (buttons.length > 0) {
+                    pointerContainer.prepend(buttons.pop());
+                }
+            }
+        }
+
+        function flipRight() {
+            if (pointerContainer.hasClass("lu") || pointerContainer.hasClass("ld")) {
+                var buttons = [];
+                var curr;
+                while ((curr = pointerContainer.children(":first")).hasClass("pointer-button")) {
+                    buttons.push(curr.detach());
+                }
+                pointerContainer.children(".pointer-info").css("margin-left", "0px");
+                pointerContainer.children(".pointer-info").css("margin-right", "1px");
+                while (buttons.length > 0) {
+                    pointerContainer.append(buttons.pop());
+                }
+            }
+        }
 
         if (r && u) {
+            flipRight();
+            clearClasses();
             pointerContainer.addClass("ru");
             pointerContainer.data('x-delta', 0).data('y-delta', -ARROW_SIZE);
         } else if (u) {
+            flipLeft();
+            clearClasses();
             pointerContainer.addClass("lu");
             pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', -ARROW_SIZE);
         } else if (r) {
+            flipRight();
+            clearClasses();
             pointerContainer.addClass("rd");
-            pointerContainer.data('x-delta', 0).data('y-delta', ARROW_SIZE);
+            pointerContainer.data('x-delta', 0).data('y-delta', 2 * ARROW_SIZE);
         } else {
+            flipLeft();
+            clearClasses();
             pointerContainer.addClass("ld");
-            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', ARROW_SIZE);
+            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', 2 * ARROW_SIZE);
         }
     });
 

@@ -115,7 +115,6 @@ $('#add').click(function() {
             title: "",
             vertices: []
         };
-        manageMap.addObject(newObject);
     }
 });
 
@@ -165,7 +164,6 @@ $('#add-save').click(function() {
         success: function(addedObject) {
             addError("Объект успешно добавлен");
             addedObject = JSON.parse(addedObject);
-            manageMap.removeObject(newObject);
             manageMap.addObject(addedObject);
             listObjects(manageMap.getObjectsList());
             fillAllObjects();

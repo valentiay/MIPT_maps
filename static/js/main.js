@@ -90,7 +90,17 @@ function locateEmployeeCabinet(cabinetID, staffInfo) {
 
 var navigation = navigation();
 
-$('#menu-button-search').click(navigation.showNavigationMenu);
+$('#menu-button-search').click(function() {
+    if ($('#floor-map-container').css("visibility") !== "hidden") {
+        floorMap.deactivate();
+        $('#floor-map-container').fadeOut(200, function () {
+            $(this).css("visibility", "hidden").show();
+        });
+        main.activate();
+    }
+    navigation.showNavigationMenu();
+});
+
 $('#search-container').on('click', '.search-employee-locate', function (event) {
     var employeeID = $(event.target).data("id");
     var employeeContainer = $(event.target.parentNode);
@@ -279,7 +289,6 @@ function bindObjectPointing(map) {
     var container = map.getContainer();
     container.on("mapClick", function(event, cords) {
         map.clear();
-        console.log(cords);
 
         var objects = map.getObjectsList();
         var object;

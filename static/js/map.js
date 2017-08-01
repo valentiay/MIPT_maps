@@ -373,13 +373,15 @@ function map(container) {
         },
         addObject: function(object) {
             if (object.id === undefined) {
-                object.id = -123;
+                console.error("No object id found");
+                return;
             }
             _objects[object.id] = object;
         },
         removeObject: function(object) {
             if (object.id === undefined) {
-                object.id = -123;
+                console.error("No object id found");
+                return;
             }
             delete _objects[object.id];
         }
