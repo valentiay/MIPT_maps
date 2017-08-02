@@ -1,9 +1,12 @@
 var manageMapContainer = $('#manage-map');
 var manageMap = map(manageMapContainer);
 
-function pointObjectVertices (object) {
+function highlightObject (object) {
+    manageMap.clear();
+    manageMap.fillObject(object);
     for (var i = 0; i < object.vertices.length; i++) {
         var point = createPoint(object.vertices[i].x, object.vertices[i].y, 1);
+        point.data("vertex", object.vertices[i]);
         manageMap.addIndicator(point);
     }
 }
@@ -65,13 +68,6 @@ function listObjects(objects) {
     objectsList.append("</ul>");
 }
 
-$('#objects-list').on("click", "li", function(event) {
-    var object = $(event.target).data("object");
-    manageMap.clear();
-    manageMap.fillObject(object);
-    pointObjectVertices(object);
-});
-
 $.ajax('/getMap', {
     type: "GET",
     data: {"mapID": MAP_ID},
@@ -100,66 +96,18 @@ $('#menu-button-decrease-scale').click(manageMap.decreaseScale);
 
 /** **/
 
-var objectAddInProcess = false;
-var newObject;
-var vertexOrder = 1;
-
-$('#add').click(function() {
-    $('#buttons').hide();
-    if (!objectAddInProcess) {
-        manageMap.clear();
-        objectAddInProcess = true;
-        $('#add-menu').show();
-        vertexOrder = 1;
-        newObject = {
-            title: "",
-            vertices: []
-        };
-    }
-});
-
-$('#location').change(function() {
-    if (!objectAddInProcess)
-        return;
-    newObject.title = $('#location').val();
-});
-
-manageMapContainer.on("mapClick", function(event, cords) {
-    if (!objectAddInProcess)
-        return;
-
-    var vertex = {
-        x: cords.x,
-        y: cords.y,
-        order: vertexOrder++,
-        mapID: MAP_ID
-    };
-    addError("Вершина добавлена");
-
-    newObject.vertices.push(vertex);
-    manageMap.clearObject(newObject);
-    manageMap.fillObject(newObject);
-});
-
-$('#add-save').click(function() {
-    if (!objectAddInProcess)
-        return;
-
-    $('#add-menu').hide();
-    $('#buttons').show();
-    objectAddInProcess = false;
-
+function saveObject(object) {
     $.ajax("/addObject", {
         method: "POST",
         data: {
             "mapID": MAP_ID,
             "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
-            "object": JSON.stringify(newObject)
+            "object": JSON.stringify(object)
         },
         dataType: "json",
         error: function() {
             addError("Сервер ответил ошибкой");
-            manageMap.remove(newObject);
+            fillAllObjects();
         },
         success: function(addedObject) {
             addError("Объект успешно добавлен");
@@ -169,6 +117,155 @@ $('#add-save').click(function() {
             fillAllObjects();
         }
     });
+}
+
+var objectEditInProcess = false;
+var editedObject;
+var editedObjectBackup;
+
+function editObject(object) {
+    $('#buttons').hide();
+    manageMap.clear();
+    objectEditInProcess = true;
+    editedObjectBackup = JSON.parse(JSON.stringify(object));
+
+    if (object.id !== undefined) {
+        manageMap.clearObject(object);
+    }
+    editedObject = object;
+
+    $('#edit-menu').show();
+    $('#edit-title').val(editedObject.title);
+    highlightObject(editedObject);
+}
+
+$('#add').click(function() {
+    if (!objectEditInProcess) {
+        editObject({
+            title: "",
+            vertices: []
+        });
+    }
+});
+
+$('#objects-list').on("click", "li", function(event) {
+    if (!objectEditInProcess) {
+     editObject($(event.target).data("object"));
+    }
+});
+
+$('#edit-location').change(function() {
+    if (!objectEditInProcess)
+        return;
+    editedObject.title = $('#edit-location').val();
+});
+
+$('#edit-cancel').click(function() {
+    if (!objectEditInProcess)
+        return;
+    $('#edit-menu').hide();
+    $('#buttons').show();
+    objectEditInProcess = false;
+
+    if (editedObjectBackup.id !== undefined) {
+        manageMap.addObject(editedObjectBackup);
+    }
+    editedObject = undefined;
+    editedObjectBackup = undefined;
+
+    manageMap.clear();
+    fillAllObjects();
+});
+
+// manageMapContainer.on("mapClick", function(event, cords) {
+//     if (!objectEditInProcess)
+//         return;
+//
+//     var vertex = {
+//         x: cords.x,
+//         y: cords.y,
+//         order: vertexOrder++,
+//         mapID: MAP_ID
+//     };
+//
+//     addError("Вершина добавлена");
+//
+//     editedObject.vertices.push(vertex);
+//     manageMap.clearObject(editedObject);
+//     manageMap.fillObject(editedObject);
+//     highlightObject(editedObject);
+// });
+
+$('#add-save').click(function() {
+    if (!objectEditInProcess)
+        return;
+
+    $('#edit-menu').hide();
+    $('#buttons').show();
+    objectEditInProcess = false;
+
+    saveObject(editedObject);
+    editedObject = undefined;
+    editedObjectBackup = undefined;
 });
 
 $('#highlight-all').click(fillAllObjects);
+
+/** Перетаскивание вершины **/
+
+$(document.body).on("mousedown", ".point", function(event) {
+    manageMap.deactivate();
+    event.stopPropagation();
+    var editedPoint = $(event.currentTarget);
+    console.log(editedPoint.data("vertex"));
+
+    // Координаты мыши после предыдущего смещения
+    var oldX = event.pageX;
+    var oldY = event.pageY;
+
+    // Функция для смещения карты при движении мыши
+    function moveProcessing(event) {
+        var clickX = event.pageX;
+        var clickY = event.pageY;
+        var dx = oldX - clickX;
+        var dy = oldY - clickY;
+
+        editedPoint.offset({
+            left: editedPoint.offset().left - dx,
+            top: editedPoint.offset().top - dy
+        });
+
+        var cords = manageMap.toCords(editedPoint.offset().left - editedPoint.parent().offset().left,
+                            editedPoint.offset().top - editedPoint.parent().offset().top);
+        editedPoint.data("x-cord", cords.x).data("y-cord", cords.y);
+        var vertex = editedPoint.data("vertex");
+        vertex.x = cords.x;
+        vertex.y = cords.y;
+
+        manageMap.clearContext();
+        manageMap.fillObject(editedObject);
+
+        oldX = clickX;
+        oldY = clickY;
+    }
+
+    // Включение обработки перемещения мыши
+    $(document.body).on('mousemove', moveProcessing);
+
+    // Функция для выключения обработки перемещения мыши
+    function moveInterruption() {
+        $(document.body).off('mousemove', moveProcessing);
+        $(document.body).off("mouseup", moveInterruption);
+        var cords = manageMap.toCords(editedPoint.offset().left - editedPoint.parent().offset().left,
+                            editedPoint.offset().top - editedPoint.parent().offset().top);
+        editedPoint.data("x-cord", cords.x).data("y-cord", cords.y);
+        var vertex = editedPoint.data("vertex");
+        vertex.x = cords.x;
+        vertex.y = cords.y;
+        editedPoint = undefined;
+        manageMap.activate();
+    }
+
+    // Обработчики событий
+    $(document.body).mouseup(moveInterruption);
+});

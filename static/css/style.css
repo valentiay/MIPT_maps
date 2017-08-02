@@ -692,7 +692,7 @@ body{
     height: 30%;
 }
 
-#add-menu {
+#edit-menu {
     display: none;
 }
 
@@ -707,7 +707,8 @@ body{
     -webkit-border-radius: 100%;
     -moz-border-radius: 100%;
     border-radius: 100%;
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
     background-color: #005892;
+    cursor: pointer;
 }

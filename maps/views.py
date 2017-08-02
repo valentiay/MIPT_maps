@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -74,8 +75,7 @@ def add_object(request):
     new_object.parent_object = parent_map.object
     try:
         new_object.save()
-    except Exception:
-        # TODO
+    except IntegrityError as e:
         return HttpResponse(status=406)
 
     for vertex_info in new_object_info["vertices"]:

@@ -1,5 +1,5 @@
 var ARROW_SIZE = 28;
-var POINT_RAD = 3;
+var POINT_RAD = 2;
 
 /** Работа с указателями */
 

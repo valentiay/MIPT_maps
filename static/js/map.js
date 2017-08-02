@@ -269,6 +269,10 @@ function map(container) {
         _context.clearRect(0, 0, MAX_X, MAX_Y);
     }
 
+    function clearContext() {
+        _context.clearRect(0, 0, MAX_X, MAX_Y);
+    }
+
     function fillObject(object) {
         var vertices = object.vertices;
         _context.beginPath();
@@ -368,6 +372,7 @@ function map(container) {
         clearObject: clearObject,
         fillObject: fillObject,
         clear: clear,
+        clearContext: clearContext,
         getContainer: function() {
             return _container;
         },
