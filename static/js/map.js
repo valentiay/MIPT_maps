@@ -275,6 +275,8 @@ function map(container) {
 
     function fillObject(object) {
         var vertices = object.vertices;
+        if (vertices.length <= 2)
+            return;
         _context.beginPath();
         _context.moveTo(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y);
         for (var i = 0; i < vertices.length; i++) {

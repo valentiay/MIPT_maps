@@ -680,12 +680,16 @@ body{
 
 #floors-list {
     max-height: 20%;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
 #objects-list {
     max-height: 50%;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
 #editing {

@@ -1,6 +1,8 @@
 var manageMapContainer = $('#manage-map');
 var manageMap = map(manageMapContainer);
 
+/** Выделение объектов **/
+
 function highlightObject (object) {
     manageMap.clear();
     manageMap.fillObject(object);
@@ -20,6 +22,8 @@ function fillAllObjects() {
         }
     }
 }
+
+/** Вывод информации **/
 
 function listFloors(floors) {
     var floorsList = $('#floors-list');
@@ -68,6 +72,8 @@ function listObjects(objects) {
     objectsList.append("</ul>");
 }
 
+/** Загрузка карты **/
+
 $.ajax('/getMap', {
     type: "GET",
     data: {"mapID": MAP_ID},
@@ -94,7 +100,118 @@ $('#menu-button-increase-scale').click(manageMap.increaseScale);
 $('#menu-button-decrease-scale').click(manageMap.decreaseScale);
 
 
-/** **/
+/** Изменение объекта **/
+
+var editionInProcess = false;
+var editedObject;
+var editedObjectBackup;
+
+function editObject(object) {
+    $('#buttons').hide();
+    manageMap.clear();
+    editionInProcess = true;
+    editedObjectBackup = object;
+    editedObject = JSON.parse(JSON.stringify(object));
+
+    if (object.id !== undefined) {
+        manageMap.clearObject(object);
+    }
+
+    $('#edit-menu').show();
+    $('#edit-title').val(editedObject.title);
+    highlightObject(editedObject);
+}
+
+function stopEditing() {
+    $('#edit-menu').hide();
+    $('#buttons').show();
+
+    editionInProcess = false;
+    editedObject = undefined;
+    editedObjectBackup = undefined;
+
+    listObjects(manageMap.getObjectsList());
+    fillAllObjects();
+}
+
+$('#highlight-all').click(fillAllObjects);
+
+$('#add').click(function() {
+    if (!editionInProcess) {
+        editObject({
+            title: "",
+            vertices: []
+        });
+    }
+});
+
+$('#objects-list').on("click", "li", function(event) {
+    editObject($(event.target).data("object"));
+});
+
+$('#edit-title').change(function() {
+    if (!editionInProcess)
+        return;
+    editedObject.title = $('#edit-title').val();
+});
+
+$('#edit-cancel').click(function() {
+    if (!editionInProcess)
+        return;
+    $('#edit-menu').hide();
+    $('#buttons').show();
+    editionInProcess = false;
+
+    if (editedObjectBackup.id !== undefined) {
+        manageMap.addObject(editedObjectBackup);
+    }
+    editedObject = undefined;
+    editedObjectBackup = undefined;
+
+    manageMap.clear();
+    fillAllObjects();
+});
+
+var vertexAddButton = $("#edit-add-vertex");
+
+function startVertexAdding() {
+    if (!editionInProcess)
+            return;
+
+    var vertexOrder = 0;
+    if (editedObject.vertices.length > 0) {
+        vertexOrder = editedObject.vertices[editedObject.vertices.length - 1].order;
+    }
+
+    function addVertex(event, cords) {
+        var vertex = {
+            x: cords.x,
+            y: cords.y,
+            order: vertexOrder++
+        };
+
+        addError("Вершина добавлена");
+
+        editedObject.vertices.push(vertex);
+        manageMap.clearObject(editedObject);
+        manageMap.fillObject(editedObject);
+        highlightObject(editedObject);
+    }
+
+    manageMapContainer.on("mapClick", addVertex);
+
+    vertexAddButton.off("click", startVertexAdding);
+    vertexAddButton.html("Остановить добавление вершин");
+
+    vertexAddButton.click(function() {
+        manageMapContainer.off("mapClick", addVertex);
+        vertexAddButton.html("Добавить вершины");
+        vertexAddButton.off("click");
+        vertexAddButton.click(startVertexAdding);
+    });
+}
+
+vertexAddButton.on("click", startVertexAdding);
 
 function saveObject(object) {
     $.ajax("/addObject", {
@@ -107,109 +224,43 @@ function saveObject(object) {
         dataType: "json",
         error: function() {
             addError("Сервер ответил ошибкой");
-            fillAllObjects();
         },
         success: function(addedObject) {
             addError("Объект успешно добавлен");
             addedObject = JSON.parse(addedObject);
             manageMap.addObject(addedObject);
-            listObjects(manageMap.getObjectsList());
-            fillAllObjects();
+            stopEditing();
         }
     });
 }
 
-var objectEditInProcess = false;
-var editedObject;
-var editedObjectBackup;
-
-function editObject(object) {
-    $('#buttons').hide();
-    manageMap.clear();
-    objectEditInProcess = true;
-    editedObjectBackup = JSON.parse(JSON.stringify(object));
-
-    if (object.id !== undefined) {
-        manageMap.clearObject(object);
-    }
-    editedObject = object;
-
-    $('#edit-menu').show();
-    $('#edit-title').val(editedObject.title);
-    highlightObject(editedObject);
-}
-
-$('#add').click(function() {
-    if (!objectEditInProcess) {
-        editObject({
-            title: "",
-            vertices: []
-        });
-    }
-});
-
-$('#objects-list').on("click", "li", function(event) {
-    if (!objectEditInProcess) {
-     editObject($(event.target).data("object"));
-    }
-});
-
-$('#edit-location').change(function() {
-    if (!objectEditInProcess)
+$('#edit-save').click(function() {
+    if (!editionInProcess)
         return;
-    editedObject.title = $('#edit-location').val();
-});
-
-$('#edit-cancel').click(function() {
-    if (!objectEditInProcess)
-        return;
-    $('#edit-menu').hide();
-    $('#buttons').show();
-    objectEditInProcess = false;
-
-    if (editedObjectBackup.id !== undefined) {
-        manageMap.addObject(editedObjectBackup);
-    }
-    editedObject = undefined;
-    editedObjectBackup = undefined;
-
-    manageMap.clear();
-    fillAllObjects();
-});
-
-// manageMapContainer.on("mapClick", function(event, cords) {
-//     if (!objectEditInProcess)
-//         return;
-//
-//     var vertex = {
-//         x: cords.x,
-//         y: cords.y,
-//         order: vertexOrder++,
-//         mapID: MAP_ID
-//     };
-//
-//     addError("Вершина добавлена");
-//
-//     editedObject.vertices.push(vertex);
-//     manageMap.clearObject(editedObject);
-//     manageMap.fillObject(editedObject);
-//     highlightObject(editedObject);
-// });
-
-$('#add-save').click(function() {
-    if (!objectEditInProcess)
-        return;
-
-    $('#edit-menu').hide();
-    $('#buttons').show();
-    objectEditInProcess = false;
 
     saveObject(editedObject);
-    editedObject = undefined;
-    editedObjectBackup = undefined;
 });
 
-$('#highlight-all').click(fillAllObjects);
+$('#edit-delete').click(function() {
+    if (!editionInProcess)
+        return;
+
+    $.ajax('/deleteObject', {
+        method: "POST",
+        data: {
+            "id": editedObject.id,
+            "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
+        },
+        success: function() {
+            manageMap.removeObject(editedObject);
+            stopEditing();
+            addError("Объект успешно удален");
+        },
+        error: function() {
+            addError("Сервер ответил ошибкой");
+        }
+    });
+});
 
 /** Перетаскивание вершины **/
 
@@ -217,7 +268,6 @@ $(document.body).on("mousedown", ".point", function(event) {
     manageMap.deactivate();
     event.stopPropagation();
     var editedPoint = $(event.currentTarget);
-    console.log(editedPoint.data("vertex"));
 
     // Координаты мыши после предыдущего смещения
     var oldX = event.pageX;
@@ -235,8 +285,11 @@ $(document.body).on("mousedown", ".point", function(event) {
             top: editedPoint.offset().top - dy
         });
 
-        var cords = manageMap.toCords(editedPoint.offset().left - editedPoint.parent().offset().left,
-                            editedPoint.offset().top - editedPoint.parent().offset().top);
+        var cords = manageMap.toCords(
+            editedPoint.offset().left - editedPoint.parent().offset().left - editedPoint.data("x-delta"),
+            editedPoint.offset().top - editedPoint.parent().offset().top + editedPoint.data("y-delta")
+        );
+
         editedPoint.data("x-cord", cords.x).data("y-cord", cords.y);
         var vertex = editedPoint.data("vertex");
         vertex.x = cords.x;
@@ -256,12 +309,17 @@ $(document.body).on("mousedown", ".point", function(event) {
     function moveInterruption() {
         $(document.body).off('mousemove', moveProcessing);
         $(document.body).off("mouseup", moveInterruption);
-        var cords = manageMap.toCords(editedPoint.offset().left - editedPoint.parent().offset().left,
-                            editedPoint.offset().top - editedPoint.parent().offset().top);
+        var cords = manageMap.toCords(
+            editedPoint.offset().left - editedPoint.parent().offset().left - editedPoint.data("x-delta"),
+            editedPoint.offset().top - editedPoint.parent().offset().top + editedPoint.data("y-delta")
+        );
+
         editedPoint.data("x-cord", cords.x).data("y-cord", cords.y);
+
         var vertex = editedPoint.data("vertex");
         vertex.x = cords.x;
         vertex.y = cords.y;
+
         editedPoint = undefined;
         manageMap.activate();
     }

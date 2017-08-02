@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import json
 
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, Http404
@@ -10,6 +11,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
+from maps.froms import ObjectForm
 from maps.models import Map, Object, Vertex
 
 
@@ -24,7 +26,6 @@ def get_map(request):
     print "GET %s : Load map %d" % (reverse(get_map), map_id)
 
     requested_map = get_object_or_404(Map, id=map_id)
-    print requested_map.get_data_json()
     return HttpResponse(requested_map.get_data_json())
 
 
@@ -60,30 +61,41 @@ def manage(request):
 
 @login_required(login_url='/admin')
 @require_POST
-def add_object(request):
-    new_object_info = json.loads(request.POST["object"])
+def edit_object(request):
+    object_info = json.loads(request.POST["object"])
     map_id = request.POST["mapID"]
 
-    if len(new_object_info["vertices"]) <= 0 or new_object_info["title"] == "":
-        return HttpResponse(status=406)
+    object_info["map_id"] = map_id
+    object_form = ObjectForm(object_info)
 
-    parent_map = Map.objects.get(id=map_id)
-
-    new_object = Object()
-    new_object.title = new_object_info["title"]
-    new_object.floor = parent_map.floor
-    new_object.parent_object = parent_map.object
     try:
-        new_object.save()
-    except IntegrityError as e:
+        if object_form.is_valid() and  len(object_info["vertices"]) > 0:
+            new_object = object_form.save()
+            new_object.vertex_set.all().delete()
+
+            order = 0
+            for vertex_info in object_info["vertices"]:
+                vertex = Vertex()
+                vertex.object = new_object
+                vertex.x = vertex_info["x"]
+                vertex.y = vertex_info["y"]
+                vertex.order = order
+                order += 1
+                vertex.save()
+
+            return HttpResponse(json.dumps(new_object.get_data_json()))
+        else:
+            return HttpResponse(status=406)
+
+    except IntegrityError:
         return HttpResponse(status=406)
 
-    for vertex_info in new_object_info["vertices"]:
-        vertex = Vertex()
-        vertex.object = new_object
-        vertex.x = vertex_info["x"]
-        vertex.y = vertex_info["y"]
-        vertex.order = vertex_info["order"]
-        vertex.save()
 
-    return HttpResponse(json.dumps(new_object.get_data_json()))
+@login_required(login_url='/admin')
+@require_POST
+def delete_object(request):
+    try:
+        Object.objects.get(id=request.POST["id"]).delete()
+        return HttpResponse("OK")
+    except IntegrityError:
+        return HttpResponse(status=406)

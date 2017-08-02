@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^getMap$', get_map, name="getMap"),
     url(r'^getCabinetLocation$', get_cabinet_location, name="getCabinetLocation"),
     url(r'^phonebook$', phonebook, name="phoneBook"),
-    url(r'^addObject$', add_object, name="addObject"),
+    url(r'^addObject$', edit_object, name="addObject"),
+    url(r'^deleteObject', delete_object, name="deleteObject"),
 ]

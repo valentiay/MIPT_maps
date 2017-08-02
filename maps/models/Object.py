@@ -31,7 +31,7 @@ class Object(models.Model):
             object_dict["vertices"].append({
                 "x": vertex.x,
                 "y": vertex.y,
-                "id": vertex.id,
+                "order": vertex.order,
             })
         return object_dict
 
