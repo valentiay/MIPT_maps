@@ -25,7 +25,7 @@ class Map(models.Model):
 
         map_dict["allFloors"] = []
         if self.object.parent_object is not None:
-            floor_maps = self.object.floor_maps.all()
+            floor_maps = self.object.floor_maps.order_by("floor").all()
             for floor_map in floor_maps:
                 map_dict["allFloors"].append({
                     "floor": floor_map.floor,
