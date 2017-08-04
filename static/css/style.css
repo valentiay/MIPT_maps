@@ -249,7 +249,7 @@ body{
     border-left-color: #1D9FBF;
 }
 
-#floor-title{
+#floor-title {
     float: left;
     margin: 10px 50px 10px 190px;
     width: calc(100% - 160px);
@@ -665,10 +665,30 @@ body{
     padding: 10px;
     width: 230px;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(10, 95, 150, 0.9);
     color: #FFF;
     z-index: 10000000;
-    overflow: scroll;
+    overflow-y: auto;
+}
+
+#controls button {
+    position: static;
+    float: left;
+    margin: 1px;
+    padding: 5px;
+    background-color: #000;
+    color: #FFF;
+    text-align: center;
+    cursor: pointer;
+}
+
+#controls button:focus {
+    outline: none;
+}
+
+#controls li {
+    margin: 5px;
+    cursor: pointer;
 }
 
 #controls a {
@@ -683,23 +703,70 @@ body{
 }
 
 #objects-list {
-    max-height: 50%;
+    max-height: 60%;
     overflow-x: hidden;
     overflow-y: auto;
     word-wrap: break-word;
 }
 
 #editing {
-    height: 30%;
+    position: absolute;
+    bottom: 40px;
+    height: 104px;
+    width: calc(100% - 20px);
+    font-size: 14px;
 }
+
+#buttons {
+    float: left;
+    width: 100%;
+}
+
 
 #edit-menu {
     display: none;
 }
 
-#controls li {
-    margin: 5px;
-    cursor: pointer;
+#edit-title {
+    margin: 1px;
+    border: none;
+    padding: 5px;
+    width: calc(100% - 12px);
+    height: 14px;
+}
+
+#edit-title {
+    outline: none;
+}
+
+#edit-add-vertex, #edit-add-rectangle {
+    width: calc(100% - 2px);
+    width: -webkit-calc(100% - 2px);
+    width: -moz-calc(100% - 2px);
+    height: 24px;
+}
+
+#edit-cancel, #edit-delete {
+    width: calc(30% - 2px);
+    width: -webkit-calc(30% - 2px);
+    width: -moz-calc(30% - 2px);
+    height: 24px;
+}
+
+#edit-save {
+    width: calc(40% - 2px);
+    width: -webkit-calc(40% - 2px);
+    width: -moz-calc(40% - 2px);
+    height: 24px;
+}
+
+#current-action {
+    position: absolute;
+    bottom: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 12px;
+    color: #ccc;
 }
 
 .point {

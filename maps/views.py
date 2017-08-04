@@ -95,7 +95,9 @@ def edit_object(request):
 @require_POST
 def delete_object(request):
     try:
+        if "id" not in request.POST:
+            raise Object.DoesNotExist
         Object.objects.get(id=request.POST["id"]).delete()
         return HttpResponse("OK")
-    except IntegrityError:
+    except Object.DoesNotExist:
         return HttpResponse(status=406)

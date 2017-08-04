@@ -99,17 +99,29 @@ $.ajax('/getMap', {
 $('#menu-button-increase-scale').click(manageMap.increaseScale);
 $('#menu-button-decrease-scale').click(manageMap.decreaseScale);
 
+/** Выбор объекта **/
+
+$('#highlight-all').click(fillAllObjects);
+
+$('#objects-list').on("click", "li", function(event) {
+    editObject($(event.target).data("object"));
+});
 
 /** Изменение объекта **/
 
-var editionInProcess = false;
+var editingInProcess = false;
 var editedObject;
 var editedObjectBackup;
 
+function setAction(action) {
+    $("#current-action").html(action);
+}
+
 function editObject(object) {
+    setAction("Изменение объекта");
     $('#buttons').hide();
     manageMap.clear();
-    editionInProcess = true;
+    editingInProcess = true;
     editedObjectBackup = object;
     editedObject = JSON.parse(JSON.stringify(object));
 
@@ -123,95 +135,155 @@ function editObject(object) {
 }
 
 function stopEditing() {
+    setAction("Выберите объект");
     $('#edit-menu').hide();
     $('#buttons').show();
 
-    editionInProcess = false;
+    editingInProcess = false;
     editedObject = undefined;
     editedObjectBackup = undefined;
+
+    stopVertexAdding();
 
     listObjects(manageMap.getObjectsList());
     fillAllObjects();
 }
 
-$('#highlight-all').click(fillAllObjects);
-
 $('#add').click(function() {
-    if (!editionInProcess) {
+    if (!editingInProcess) {
         editObject({
             title: "",
             vertices: []
         });
+        startVertexAdding();
     }
 });
 
-$('#objects-list').on("click", "li", function(event) {
-    editObject($(event.target).data("object"));
-});
-
 $('#edit-title').change(function() {
-    if (!editionInProcess)
+    if (!editingInProcess)
         return;
     editedObject.title = $('#edit-title').val();
 });
 
-$('#edit-cancel').click(function() {
-    if (!editionInProcess)
-        return;
-    $('#edit-menu').hide();
-    $('#buttons').show();
-    editionInProcess = false;
-
-    if (editedObjectBackup.id !== undefined) {
-        manageMap.addObject(editedObjectBackup);
-    }
-    editedObject = undefined;
-    editedObjectBackup = undefined;
-
-    manageMap.clear();
-    fillAllObjects();
-});
+/** Добавление вершин **/
 
 var vertexAddButton = $("#edit-add-vertex");
 
+function addVertex(event, cords) {
+    var vertex = {
+        x: cords.x,
+        y: cords.y
+    };
+
+    addError("Вершина добавлена");
+
+    editedObject.vertices.push(vertex);
+    manageMap.clearObject(editedObject);
+    manageMap.fillObject(editedObject);
+    highlightObject(editedObject);
+}
+
 function startVertexAdding() {
-    if (!editionInProcess)
-            return;
+    if (!editingInProcess)
+        return;
 
-    var vertexOrder = 0;
-    if (editedObject.vertices.length > 0) {
-        vertexOrder = editedObject.vertices[editedObject.vertices.length - 1].order;
-    }
-
-    function addVertex(event, cords) {
-        var vertex = {
-            x: cords.x,
-            y: cords.y,
-            order: vertexOrder++
-        };
-
-        addError("Вершина добавлена");
-
-        editedObject.vertices.push(vertex);
-        manageMap.clearObject(editedObject);
-        manageMap.fillObject(editedObject);
-        highlightObject(editedObject);
-    }
+    setAction("Добавление вершин");
 
     manageMapContainer.on("mapClick", addVertex);
 
     vertexAddButton.off("click", startVertexAdding);
     vertexAddButton.html("Остановить добавление вершин");
 
-    vertexAddButton.click(function() {
-        manageMapContainer.off("mapClick", addVertex);
-        vertexAddButton.html("Добавить вершины");
-        vertexAddButton.off("click");
-        vertexAddButton.click(startVertexAdding);
-    });
+    vertexAddButton.click(stopVertexAdding);
+}
+
+function stopVertexAdding() {
+    setAction("Изменение объекта");
+
+    manageMapContainer.off("mapClick", addVertex);
+    vertexAddButton.html("Добавить вершины");
+    vertexAddButton.off("click");
+    vertexAddButton.click(startVertexAdding);
 }
 
 vertexAddButton.on("click", startVertexAdding);
+
+function addRect() {
+    if (!editingInProcess)
+        return;
+
+    setAction("Добавление вершин прямоугольником");
+
+    manageMapContainer.off("mousedown", rectProcessing);
+
+    function rectProcessing(event) {
+        manageMapContainer.off("mousedown", rectProcessing);
+        manageMapContainer.mouseup();
+        manageMap.deactivate();
+        event.stopPropagation();
+
+        var ver1 = manageMap.toCords(
+            event.pageX - manageMapContainer.offset().left,
+            event.pageY - manageMapContainer.offset().top
+        );
+        var ver2;
+
+        // Координаты мыши после предыдущего смещения
+        var oldX = event.pageX;
+        var oldY = event.pageY;
+
+        // Функция для смещения карты при движении мыши
+        function moveProcessing(event) {
+            var clickX = event.pageX;
+            var clickY = event.pageY;
+
+            ver2 = manageMap.toCords(
+                event.pageX - manageMapContainer.offset().left,
+                event.pageY - manageMapContainer.offset().top
+            );
+
+            var rect = {
+                vertices:[
+                    ver1,
+                    {x: ver2.x, y: ver1.y},
+                    ver2,
+                    {x: ver1.x, y: ver2.y}
+                ]
+            };
+            rect.vertices = rect.vertices.concat(editedObject.vertices);
+            highlightObject(rect);
+
+            oldX = clickX;
+            oldY = clickY;
+        }
+
+        // Включение обработки перемещения мыши
+        $(document.body).on('mousemove', moveProcessing);
+
+        // Функция для выключения обработки перемещения мыши
+        function moveInterruption() {
+            $(document.body).off('mousemove', moveProcessing);
+            $(document.body).off("mouseup", moveInterruption);
+
+            editedObject.vertices.push(ver1);
+            editedObject.vertices.push({x: ver2.x, y: ver1.y});
+            editedObject.vertices.push(ver2);
+            editedObject.vertices.push({x: ver1.x, y: ver2.y});
+
+            highlightObject(editedObject);
+            manageMap.activate();
+        }
+
+        // Обработчики событий
+        $(document.body).mouseup(moveInterruption);
+    }
+
+    manageMapContainer.mousedown(rectProcessing);
+}
+
+$("#edit-add-rectangle").click(addRect);
+
+/** Подтверждение изменений **/
 
 function saveObject(object) {
     $.ajax("/addObject", {
@@ -226,6 +298,7 @@ function saveObject(object) {
             addError("Сервер ответил ошибкой");
         },
         success: function(addedObject) {
+            setAction("Выберите объект");
             addError("Объект успешно добавлен");
             addedObject = JSON.parse(addedObject);
             manageMap.addObject(addedObject);
@@ -235,14 +308,14 @@ function saveObject(object) {
 }
 
 $('#edit-save').click(function() {
-    if (!editionInProcess)
+    if (!editingInProcess)
         return;
 
     saveObject(editedObject);
 });
 
 $('#edit-delete').click(function() {
-    if (!editionInProcess)
+    if (!editingInProcess)
         return;
 
     $.ajax('/deleteObject', {
@@ -252,6 +325,7 @@ $('#edit-delete').click(function() {
             "csrfmiddlewaretoken": $('input[name="csrfmiddlewaretoken"]').val(),
         },
         success: function() {
+            setAction("Выберите объект");
             manageMap.removeObject(editedObject);
             stopEditing();
             addError("Объект успешно удален");
@@ -262,9 +336,30 @@ $('#edit-delete').click(function() {
     });
 });
 
+$('#edit-cancel').click(function() {
+    if (!editingInProcess)
+        return;
+
+    setAction("Выберите объект");
+
+    $('#edit-menu').hide();
+    $('#buttons').show();
+    editingInProcess = false;
+
+    if (editedObjectBackup.id !== undefined) {
+        manageMap.addObject(editedObjectBackup);
+    }
+    editedObject = undefined;
+    editedObjectBackup = undefined;
+
+    manageMap.clear();
+    fillAllObjects();
+});
+
 /** Перетаскивание вершины **/
 
 $(document.body).on("mousedown", ".point", function(event) {
+    manageMapContainer.mouseup();
     manageMap.deactivate();
     event.stopPropagation();
     var editedPoint = $(event.currentTarget);

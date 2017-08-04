@@ -21,11 +21,13 @@
             {% csrf_token %}
             <input type="text" id="edit-title" placeholder="Назание объекта">
             <button id="edit-add-vertex">Добавить вершины</button>
+            <button id="edit-add-rectangle">Добавить прямоугольник вершин</button>
             <button id="edit-cancel">Отмена</button>
             <button id="edit-delete">Удалить</button>
             <button id="edit-save">Сохранить</button>
         </div>
     </div>
+    <div id="current-action"> Выберите объект </div>
 </div>
 
 <div class="menu-button" id="menu-button-increase-scale"></div>

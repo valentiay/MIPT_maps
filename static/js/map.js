@@ -67,6 +67,11 @@ function map(container) {
             scale = _scale;
         var ans = {};
         ans.x = (_originX + offsetX) / scale * MAGIC_RATIO;
+        // console.log((_originX + offsetX) / scale * MAGIC_RATIO);
+        // console.log(MAGIC_RATIO);
+        // console.log(_originX );
+        // console.log(offsetX);
+        // console.log(scale);
         ans.y = (_originY + offsetY) / scale * MAGIC_RATIO;
         return ans;
     }
@@ -85,9 +90,6 @@ function map(container) {
 
     // Задает координаты обозначению на карте
     function setIndicatorPosition(indicator) {
-        if (!_container.data("isActive"))
-            return;
-
         var xCord = indicator.data('x-cord');
         var yCord = indicator.data('y-cord');
         var xDelta = indicator.data('x-delta');
