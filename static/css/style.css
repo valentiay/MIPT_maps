@@ -217,7 +217,6 @@ body{
 
 #floor-list{
     float: left;
-    margin-top: 50px;
     padding: 0 20px;
     width: 100px;
     height: calc(100% - 40px);
@@ -227,9 +226,8 @@ body{
 
 #floor-list p{
     position: relative;
-    top: 0;
-    left: 0;
     margin-top: 0;
+    margin-bottom: 10px;
     font-family: HelveticaBold, sans-serif;
     font-size: 18px;
     color: lightgrey;
@@ -253,11 +251,12 @@ body{
 
 #floor-title{
     float: left;
-    margin: 10px 50px;
+    margin: 10px 50px 10px 190px;
     width: calc(100% - 160px);
     width: -moz-calc(100% - 160px);
     width: -webkit-calc(100% - 160px);
     min-height: 30px;
+    line-height: 30px;
     text-align: center;
     font-size: 25px;
     color: #FFFFFF;
@@ -265,11 +264,9 @@ body{
 
 #floor-map{
     float: left;
+    left: 10px;
     position: relative;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-    margin: 0 10px 10px 10px;
+    margin-bottom: 10px;
     width: calc(100% - 160px);
     width: -moz-calc(100% - 160px);
     width: -webkit-calc(100% - 160px);
@@ -277,7 +274,7 @@ body{
     height: -moz-calc(100% - 80px);
     height: -webkit-calc(100% - 80px);
     background-size: contain;
-    background-color: rgba(0, 0, 0, 0.7);
+    overflow: hidden;
 }
 
 #floor-close{

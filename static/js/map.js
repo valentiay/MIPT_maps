@@ -184,9 +184,6 @@ function map(container) {
         changeScale(x, y, 1 / 1.5);
     }
 
-    // Обработчики
-    _container.dblclick(increaseScale);
-
     /** Перетаскивание */
 
     // Смещает положение карты на (dx, dy) в пикселях
@@ -259,8 +256,6 @@ function map(container) {
 
     // Обработчики событий
     $(document.body).mouseup(moveInterruption);
-    _container.dblclick(moveInterruption);
-    _container.click(moveInterruption);
 
     /** Работа с холстом */
 
