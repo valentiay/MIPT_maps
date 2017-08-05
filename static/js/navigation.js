@@ -46,15 +46,16 @@ function navigation() {
             deptContainer.data('active', false);
 
             deptContainer.append(dept);
+            var deptName = _departments[i].dept_name;
 
-            if (_departments[i].dept_name.indexOf('Кафедра') + 1
-                || _departments[i].dept_name.indexOf('Лаборатория') + 1
-                || _departments[i].dept_name.indexOf('Департамент') + 1) {
+            if (deptName.indexOf('Кафедра') + 1
+                || deptName.indexOf('Лаборатория') + 1
+                || deptName.indexOf('Департамент') + 1) {
                 $('#search-chairs').append(deptContainer);
-            } else if (_departments[i].dept_name.indexOf('Деканат') + 1) {
+            } else if (deptName.indexOf('Деканат') + 1) {
                 $('#search-deans').append(deptContainer);
-            } else if (_departments[i].dept_name.indexOf('Отдел') + 1
-                || _departments[i].dept_name.indexOf('Центр') + 1) {
+            } else if (deptName.indexOf('Отдел') + 1
+                || deptName.indexOf('Центр') + 1) {
                 $('#search-units').append(deptContainer);
             } else {
                 $('#search-other').append(deptContainer);
@@ -101,28 +102,31 @@ function navigation() {
     _navigationContainer.on('click', '.search-department', function(event) {
         var deptLabel = $(event.target);
         var deptContainer = $(event.target.parentNode);
-        if (!deptLabel.data('active')) {
-            deptLabel.data('active', true);
-            deptLabel.addClass("search-department-active");
-            var did = deptContainer.data('id');
+        function requestForEmployees(did, retry) {
+            if (retry !== undefined) {
+                addError("Не удалось загрузить список сотрудников");
+                return;
+            }
+
             $.ajax('/phonebook', {
                 type: "GET",
                 data: {did: did},
                 dataType: "json",
-                beforeSend: function() {
+                beforeSend: function () {
                     $("<div />", {
                         "class": "search-loader loader"
                     }).appendTo($("<div />", {
                         "class": "search-loader-container"
                     }).appendTo(deptContainer));
                 },
-                error: function() {
-                    addError("Не удалось загрузить список сотрудников")
+                error: function () {
+                    deptContainer.children(":not(.search-department, span)").remove();
+                    requestForEmployees(did, true);
                 },
-                success: function(deptInfo) {
+                success: function (deptInfo) {
                     if (!deptLabel.hasClass('search-department-active'))
                         return;
-                    deptContainer.children(":not(.search-department)").remove();
+                    deptContainer.children(":not(.search-department, span)").remove();
                     var employeeList = $("<div />", {
                         "class": "search-employee-list"
                     });
@@ -138,6 +142,12 @@ function navigation() {
                     }
                 }
             });
+        }
+
+        if (!deptLabel.data('active')) {
+            deptLabel.data('active', true);
+            deptLabel.addClass("search-department-active");
+            requestForEmployees(deptContainer.data('id'));
         } else {
             deptLabel.removeClass("search-department-active");
             deptLabel.siblings(":not(.search-department)").remove();
@@ -147,12 +157,18 @@ function navigation() {
 
     // Добавляет сотрудника в список сотрудников
     function addEmployee(employeeList, elem) {
-        if (elem.occupation === null || elem.full_name === null)
-            return;
+        var text = "";
+        if (elem.occupation !== null) {
+            text += elem.occupation + " ";
+        }
+        if (elem.full_name !== null) {
+            text += elem.full_name;
+        }
+
 
         var employeeDiv = $("<div />", {
             "class": "search-employee",
-            "text": elem.occupation + ' ' + elem.full_name
+            "text": text
         });
 
         var employeeDivContainer = $("<div />", {
@@ -267,7 +283,6 @@ function navigation() {
         hideSearchList();
         hideNavigationMenu();
     });
-
 
     return {
         showNavigationMenu: showNavigationMenu,

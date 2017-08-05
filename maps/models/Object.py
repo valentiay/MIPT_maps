@@ -6,7 +6,7 @@ from django.db import models
 
 
 class Object(models.Model):
-    title = models.CharField(max_length=200, unique=True)
+    title = models.CharField(max_length=200, unique=True, db_index=True)
     floor = models.IntegerField(blank=True, null=True)
     parent_object = models.ForeignKey('self', blank=True, null=True, related_name="child_objects")
 
@@ -38,12 +38,21 @@ class Object(models.Model):
     def get_data_json(self):
         return json.dumps(self.get_data_dict())
 
-    def get_location_json(self):
+    def get_location_json_as_cabinet(self):
         parent_object = self.parent_object
         object_dict = {
             "cabinet": self.title,
             "mapID": parent_object.floor_maps.filter(floor=self.floor).all()[0].id,
             "buildingID": parent_object.id,
             "cabinetID": self.id,
+        }
+        return json.dumps(object_dict)
+
+    def get_location_json_as_building(self):
+        object_dict = {
+            "cabinet": None,
+            "mapID": self.parent_object.floor_maps.filter(floor=self.floor).all()[0].id,
+            "buildingID": self.id,
+            "cabinetID": None,
         }
         return json.dumps(object_dict)

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import json
 
-from django import forms
+import re
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, Http404
@@ -11,8 +11,8 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
-from maps.froms import ObjectForm
-from maps.models import Map, Object, Vertex
+from maps.forms import ObjectForm
+from maps.models import Map, Object, Vertex, Alias
 
 
 @require_GET
@@ -23,7 +23,6 @@ def index(request):
 @require_GET
 def get_map(request):
     map_id = int(request.GET.get('mapID'))
-    print "GET %s : Load map %d" % (reverse(get_map), map_id)
 
     requested_map = get_object_or_404(Map, id=map_id)
     return HttpResponse(requested_map.get_data_json())
@@ -31,18 +30,21 @@ def get_map(request):
 
 @require_GET
 def get_cabinet_location(request):
-    cabinet = request.GET.get('cabinet').strip()
+    cabinet = request.GET.get('cabinet').strip().upper()
 
     try:
-        requested_object = get_object_or_404(Object, title=cabinet)
-        return HttpResponse(requested_object.get_location_json())
-    except Http404:
-        return HttpResponse(status=404)
+        requested_cabinet = Object.objects.get(title=cabinet)
+        return HttpResponse(requested_cabinet.get_location_json_as_cabinet())
+    except Object.DoesNotExist:
+        try:
+            alias = re.split('[1-9]+', cabinet)[0]
+            return HttpResponse(Alias.objects.get(title=alias).related_object.get_location_json_as_building())
+        except Alias.DoesNotExist:
+            return HttpResponse(status=404)
 
 
 @require_GET
 def phonebook(request):
-    print "GET %s: Phonebook request. Proxy server is malfunctioning" % reverse(phonebook)
     return HttpResponse(status=404)
 
 
@@ -71,7 +73,7 @@ def edit_object(request):
     object_form = ObjectForm(object_info)
 
     try:
-        if object_form.is_valid() and  len(object_info["vertices"]) > 0:
+        if object_form.is_valid() and len(object_info["vertices"]) > 2:
             new_object = object_form.save()
             new_object.vertex_set.all().delete()
 

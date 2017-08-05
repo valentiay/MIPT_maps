@@ -29,24 +29,46 @@ mainContainer.dblclick(main.increaseScale);
 
 /** Создание указателей на точку по запросу из навигационного меню */
 
+function getStaffInfoText(staffInfo) {
+    var result = "";
+    if (staffInfo.occupation !== null) {
+        result += staffInfo.occupation + '<br/>';
+    }
+    if (staffInfo.full_name !== null) {
+        result += '<b>' + staffInfo.full_name + '</b><br />';
+    }
+    if (staffInfo.phone_ext !== null) {
+        result += 'ТЕЛ:' + staffInfo.phone_ext + '<br />';
+    }
+    if (staffInfo.location !== null) {
+        result += staffInfo.location;
+    }
+    return result;
+}
+
 // Найти здание с кабинетом сотрудника на главной карте
 function locateEmployeeBuilding(location, staffInfo) {
     main.clear();
     var object = main.getObjectByID(location.buildingID);
     var cords = getAvgCords(object.vertices);
 
-    // Создание окна здания
-    var pointer = createBasePointer(cords.x, cords.y,
-        staffInfo.occupation + '<br/><b>'
-        + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-        + staffInfo.phone_ext + '<br />' + staffInfo.location);
+    // Создание указателя на здание
+    var pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
     pointer.data('mapID', location.mapID);
-    appendWithLocator(pointer);
-    appendWithCross(pointer);
-    pointer.data('mapID', location.mapID);
-    pointer.data('cabinetID', location.cabinetID);
     pointer.data('staffInfo', staffInfo);
     pointer.data('object', object);
+
+    if (location.cabinetID !== null) {
+        pointer.data('cabinetID', location.cabinetID);
+        appendWithLocator(pointer);
+    } else {
+        if (object.mapID !== null) {
+            pointer.data("mapID", object.mapID);
+            appendWithInsideMap(pointer)
+        }
+    }
+
+    appendWithCross(pointer);
     main.fillObject(object);
     main.addIndicator(pointer);
 
@@ -77,9 +99,7 @@ function locateEmployeeCabinet(cabinetID, staffInfo) {
     var object = floorMap.getObjectByID(cabinetID);
     var cords = getAvgCords(object.vertices);
 
-    var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
-        + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-        + staffInfo.phone_ext + '<br />');
+    var pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
     pointer.data('mapID', location.mapID);
     pointer.data('object', object);
     floorMap.fillObject(object);
@@ -123,9 +143,15 @@ $('#search-container').on('click', '.search-employee-locate', function (event) {
         success: function(staffInfo) {
             if (staffInfo.location === null) {
                 addError("Кабинет сотрудника не указан");
+                employeeContainer.children(".employee-loader-container").remove();
+                employeeContainer.append();
+                return;
             }
             if (staffInfo instanceof Array) {
-                addError("Информация о сотруднике не указана");
+                console.error("staffInfo is an array");
+                employeeContainer.children(".employee-loader-container").remove();
+                addError("Что-то пошло не так");
+                return;
             }
             $.ajax('/getCabinetLocation', {
                 type: "GET",
@@ -133,6 +159,15 @@ $('#search-container').on('click', '.search-employee-locate', function (event) {
                 dataType: "json",
                 error: function() {
                     employeeContainer.children(".employee-loader-container").remove();
+                    var se = employeeContainer.children(".search-employee");
+                    se.children("h5").remove();
+                    se.children("br").remove();
+                    if (staffInfo.location !== null) {
+                        se.append("<br /><h5>" + staffInfo.location + "</h5>");
+                    }
+                    if (staffInfo.phone_ext !== null) {
+                        se.append("<h5>ТЕЛ:" + staffInfo.phone_ext + "</h5>");
+                    }
                     addError("Не удалось найти кабинет");
                 },
                 success: function(location) {
