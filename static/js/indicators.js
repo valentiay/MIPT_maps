@@ -28,10 +28,10 @@ function createBasePointer(x, y, description) {
         var y = offset.top - pointerContainer.data("y-delta") - pointerContainer.height() - parentOffset.top;
         var r = true;
         var u = true;
-        if (x + pointerContainer.width() > parentMap.width()) {
+        if (x + pointerContainer.width() > parentMap.width() && x - pointerContainer.width() >= 0) {
             r = false;
         }
-        if (y < 0) {
+        if (y < 0 && y + 2 * (pointerContainer.height() + ARROW_SIZE) <= parentMap.height()) {
             u = false;
         }
 
@@ -76,22 +76,30 @@ function createBasePointer(x, y, description) {
             flipRight();
             clearClasses();
             pointerContainer.addClass("ru");
-            pointerContainer.data('x-delta', 0).data('y-delta', -ARROW_SIZE);
+            pointerContainer
+                .data('x-delta', 0)
+                .data('y-delta', -ARROW_SIZE);
         } else if (u) {
             flipLeft();
             clearClasses();
             pointerContainer.addClass("lu");
-            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', -ARROW_SIZE);
+            pointerContainer
+                .data('x-delta', -pointerContainer.width())
+                .data('y-delta', -ARROW_SIZE);
         } else if (r) {
             flipRight();
             clearClasses();
             pointerContainer.addClass("rd");
-            pointerContainer.data('x-delta', 0).data('y-delta', 2 * ARROW_SIZE);
+            pointerContainer
+                .data('x-delta', 0)
+                .data('y-delta', pointerContainer.height() + ARROW_SIZE);
         } else {
             flipLeft();
             clearClasses();
             pointerContainer.addClass("ld");
-            pointerContainer.data('x-delta', -pointerContainer.width()).data('y-delta', 2 * ARROW_SIZE);
+            pointerContainer
+                .data('x-delta', -pointerContainer.width())
+                .data('y-delta', pointerContainer.height() + ARROW_SIZE);
         }
     });
 

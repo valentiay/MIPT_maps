@@ -79,7 +79,7 @@ function locateEmployeeCabinet(cabinetID, staffInfo) {
 
     var pointer = createBasePointer(cords.x, cords.y, staffInfo.occupation + '</br><b>'
         + staffInfo.full_name + '</b><br />' + 'ТЕЛ:'
-        + staffInfo.phone_ext + '<br /> ' + staffInfo.location);
+        + staffInfo.phone_ext + '<br />');
     pointer.data('mapID', location.mapID);
     pointer.data('object', object);
     floorMap.fillObject(object);

@@ -31,17 +31,19 @@ def get_map(request):
 
 @require_GET
 def get_cabinet_location(request):
-    cabinet = request.GET.get('cabinet')
-    print "GET %s : Get cabinet location %s" % (reverse(get_cabinet_location), cabinet)
+    cabinet = request.GET.get('cabinet').strip()
 
-    requested_object = get_object_or_404(Object, title=cabinet)
-    return HttpResponse(requested_object.get_location_json())
+    try:
+        requested_object = get_object_or_404(Object, title=cabinet)
+        return HttpResponse(requested_object.get_location_json())
+    except Http404:
+        return HttpResponse(status=404)
 
 
 @require_GET
 def phonebook(request):
     print "GET %s: Phonebook request. Proxy server is malfunctioning" % reverse(phonebook)
-    raise Http404
+    return HttpResponse(status=404)
 
 
 @login_required(login_url='/admin')

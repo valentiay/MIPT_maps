@@ -20,6 +20,7 @@
     padding: 0;
     margin: 0;
     border: 0;
+    word-wrap: break-word;
 }
 
 html, body {
@@ -167,7 +168,7 @@ body{
     vertical-align: top;
     margin-right: 1px;
     padding: 7px 7px 6px 7px;
-    max-width: 200px;
+    max-width: calc(100% - 47px);
     min-height: 17px;
     background-color: #000;
     color: #FFF;
@@ -215,7 +216,7 @@ body{
     z-index: 10000000;
 }
 
-#floor-list{
+#floor-list {
     float: left;
     padding: 0 20px;
     width: 100px;
@@ -274,7 +275,7 @@ body{
     height: -moz-calc(100% - 80px);
     height: -webkit-calc(100% - 80px);
     background-size: contain;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #floor-close{
@@ -654,6 +655,7 @@ body{
     width: -moz-calc(100% - 250px);
     width: -webkit-calc(100% - 250px);
     height: 100%;
+    background-color: #bababa;
     overflow: hidden;
     z-index: 1;
 }
@@ -696,14 +698,17 @@ body{
 }
 
 #floors-list {
-    max-height: 20%;
+    border-bottom: 2px solid #000;
+    max-height: calc(20% - 2px);
     overflow-x: hidden;
     overflow-y: auto;
     word-wrap: break-word;
 }
 
 #objects-list {
-    max-height: 60%;
+    margin-top: 10px;
+    border-bottom: 2px solid #000;
+    max-height: calc(65% - 156px);
     overflow-x: hidden;
     overflow-y: auto;
     word-wrap: break-word;
