@@ -19,6 +19,11 @@ class Object(models.Model):
         object_dict["id"] = self.id
         object_dict["title"] = self.title
 
+        photos = self.photo_set.all()
+        object_dict["photos"] = []
+        for photo in photos:
+            object_dict["photos"].append(photo.url)
+
         # TODO Refactor
         try:
             object_dict["mapID"] = self.floor_maps.order_by("floor")[0].id

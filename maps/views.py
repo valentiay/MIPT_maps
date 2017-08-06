@@ -24,8 +24,11 @@ def index(request):
 def get_map(request):
     map_id = int(request.GET.get('mapID'))
 
-    requested_map = get_object_or_404(Map, id=map_id)
-    return HttpResponse(requested_map.get_data_json())
+    try:
+        requested_map = get_object_or_404(Map, id=map_id)
+        return HttpResponse(requested_map.get_data_json())
+    except Http404:
+        return HttpResponse(status=404)
 
 
 @require_GET
@@ -37,7 +40,7 @@ def get_cabinet_location(request):
         return HttpResponse(requested_cabinet.get_location_json_as_cabinet())
     except Object.DoesNotExist:
         try:
-            alias = re.split('[1-9]+', cabinet)[0]
+            alias = re.split(r'[1-9]+', cabinet)[0].strip()
             return HttpResponse(Alias.objects.get(title=alias).related_object.get_location_json_as_building())
         except Alias.DoesNotExist:
             return HttpResponse(status=404)

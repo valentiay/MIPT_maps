@@ -119,6 +119,12 @@ $('#menu-button-search').click(function() {
         });
         main.activate();
     }
+    if ($('#photos-container').css("display") !== "none") {
+        $('#photos-container').fadeOut(200);
+        photos = undefined;
+        photoIndex = undefined;
+        main.activate();
+    }
     navigation.showNavigationMenu();
 });
 
@@ -223,12 +229,12 @@ function loadFloorMap(id) {
                 var floorMapContainer = $('#floor-map');
                 if (width / height < MAX_FLOOR_MAP_WIDTH / MAX_FLOOR_MAP_HEIGHT) {
                     if (MAX_FLOOR_MAP_HEIGHT < height) {
-                        floorTitle.width(width * MAX_FLOOR_MAP_WIDTH / height - 80);
+                        floorTitle.width(width * MAX_FLOOR_MAP_HEIGHT / height - 80);
                         floorMapContainer.height(MAX_FLOOR_MAP_HEIGHT - floorTitle.height());
                         floorMapContainer.width(floorMapContainer.height() * width / height);
                         floorMapContainer.css("left", 10 + (MAX_FLOOR_MAP_HEIGHT * width / height - floorMapContainer.width()) / 2);
                     } else {
-                        floorTitle.width(width);
+                        floorTitle.width(width - 80);
                         floorMapContainer.height(height - floorTitle.height());
                         floorMapContainer.width(floorMapContainer.height() * width / height);
                         floorMapContainer.css("left", 10 + (width - floorMapContainer.width()) / 2);
@@ -323,6 +329,7 @@ $('#floor-close').click(function() {
     main.activate();
 });
 
+/** Клик по карте **/
 
 function bindObjectPointing(map) {
     function pointObject(object) {
@@ -332,7 +339,10 @@ function bindObjectPointing(map) {
         if (object.mapID !== null) {
             appendWithInsideMap(pointer);
             pointer.data("mapID", object.mapID);
+        }
+        if (object.photos.length > 0) {
             appendWithPhotos(pointer);
+            pointer.data("photos", object.photos)
         }
         appendWithCross(pointer);
         map.addIndicator(pointer);
@@ -360,3 +370,88 @@ function bindObjectPointing(map) {
 
 bindObjectPointing(main);
 bindObjectPointing(floorMap);
+
+/** Фотографии **/
+
+var photos;
+var photoIndex;
+
+function loadPhoto() {
+    var photosContainer = $('#photos-container');
+    photosContainer.hide().fadeIn(200);
+    photosContainer.children("img").remove();
+    var img = new Image;
+    img.src = photos[photoIndex];
+    var MAX_PHOTO_WIDTH = $(document.body).width() - 80;
+    var MAX_PHOTO_HEIGHT = $(document.body).height() - 80;
+    $(img).on("load", function () {
+        var width = img.width;
+        var height = img.height;
+        photosContainer.append(img);
+        if (width / height < MAX_PHOTO_WIDTH / MAX_PHOTO_HEIGHT) {
+            if (MAX_PHOTO_HEIGHT < height) {
+                img.height = MAX_PHOTO_HEIGHT;
+                img.width = MAX_PHOTO_HEIGHT * width / height;
+            } else {
+                img.height = height;
+                img.width = width;
+            }
+         } else {
+            if (MAX_PHOTO_WIDTH < width) {
+                img.width = MAX_PHOTO_WIDTH;
+                img.height = height * MAX_PHOTO_WIDTH / width;
+            } else {
+                img.width = width;
+                img.height = height;
+            }
+        }
+        var prev = $('#photos-prev');
+        var next = $('#photos-next');
+
+        if (photoIndex - 1 >= 0) {
+            prev.show();
+            prev.css("top", photosContainer.height() / 2 + 10 + "px");
+        } else {
+            prev.hide();
+        }
+
+        if (photoIndex + 1 < photos.length) {
+            next.show();
+            next.css("top", photosContainer.height() / 2 + 10 + "px");
+        } else {
+            next.hide();
+        }
+
+        photosContainer.css("left", ($(document.body).width() - photosContainer.width()) / 2 - 30 + "px");
+        photosContainer.css("top", ($(document.body).height() - photosContainer.height()) / 2 - 30 + "px");
+    });
+}
+
+$(document.body).on("click", ".pointer-photos", function(event) {
+    main.deactivate();
+    var pointer = $(event.target).parent();
+    photos = pointer.data("object").photos;
+    photoIndex = 0;
+    loadPhoto();
+});
+
+$('#photos-cross').click(function() {
+    photos = undefined;
+    photoIndex = undefined;
+    $('#photos-container').fadeOut(200);
+    main.activate();
+});
+
+$('#photos-prev').click(function() {
+    if (photoIndex - 1 >= 0) {
+        photoIndex--;
+        loadPhoto();
+    }
+});
+
+$('#photos-next').click(function() {
+    if (photoIndex + 1 < photos.length) {
+        photoIndex++;
+        loadPhoto();
+    }
+});

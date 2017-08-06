@@ -647,6 +647,42 @@ body{
     z-index: 11000000;
 }
 
+#photos-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 30px;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10000000;
+}
+
+/*noinspection CssOptimizeSimilarProperties*/
+.photos-button {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-position: center;
+    background-size: cover;
+    cursor: pointer;
+}
+
+#photos-cross {
+    top: 0;
+    right: 0;
+    background-image: url(/static/img/cross.png);
+}
+
+#photos-prev {
+    left: 0;
+    background-image: url(/static/img/back.png);
+}
+
+#photos-next {
+    right: 0;
+    background-image: url(/static/img/next.png);
+}
+
 /****/
 
 #manage-map {

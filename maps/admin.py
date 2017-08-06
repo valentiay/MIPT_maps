@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from maps.models import Object, Map, Vertex, Alias
+from maps.models import Object, Map, Vertex, Alias, Photo
 
 admin.site.register(Map)
 admin.site.register(Object)
 admin.site.register(Vertex)
 admin.site.register(Alias)
+admin.site.register(Photo)
