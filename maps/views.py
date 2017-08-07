@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from maps.forms import ObjectForm
@@ -33,14 +32,14 @@ def get_map(request):
 
 @require_GET
 def get_cabinet_location(request):
-    cabinet = request.GET.get('cabinet').strip().upper()
+    cabinet = request.GET.get('cabinet').upper()
 
     try:
-        requested_cabinet = Object.objects.get(title=cabinet)
+        requested_cabinet = Object.objects.get(title=cabinet.replace(' ', ''))
         return HttpResponse(requested_cabinet.get_location_json_as_cabinet())
     except Object.DoesNotExist:
         try:
-            alias = re.split(r'[1-9]+', cabinet)[0].strip()
+            alias = re.search(r'[A-Za-zА-ЯЁа-яё]+(\d(?!\d)|\d\d(?!\d)|)', cabinet).group(0)
             return HttpResponse(Alias.objects.get(title=alias).related_object.get_location_json_as_building())
         except Alias.DoesNotExist:
             return HttpResponse(status=404)

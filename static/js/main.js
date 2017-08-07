@@ -49,27 +49,36 @@ function getStaffInfoText(staffInfo) {
 // Найти здание с кабинетом сотрудника на главной карте
 function locateEmployeeBuilding(location, staffInfo) {
     main.clear();
-    var object = main.getObjectByID(location.buildingID);
-    var cords = getAvgCords(object.vertices);
+    var building = main.getObjectByID(location.buildingID);
+    var cords = getAvgCords(building.vertices);
 
-    // Создание указателя на здание
-    var pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
+    var pointer;
+    if (staffInfo !== undefined) {
+        // Создание указателя на здание
+        pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
+        pointer.data('staffInfo', staffInfo);
+    } else {
+        if (location.cabinetID !== null) {
+            pointer = createBasePointer(cords.x, cords.y, location.cabinet);
+        } else {
+            pointer = createBasePointer(cords.x, cords.y, building.title);
+        }
+    }
+
     pointer.data('mapID', location.mapID);
-    pointer.data('staffInfo', staffInfo);
-    pointer.data('object', object);
-
+    pointer.data('object', building);
     if (location.cabinetID !== null) {
         pointer.data('cabinetID', location.cabinetID);
         appendWithLocator(pointer);
     } else {
-        if (object.mapID !== null) {
-            pointer.data("mapID", object.mapID);
+        if (building.mapID !== null) {
+            pointer.data("mapID", building.mapID);
             appendWithInsideMap(pointer)
         }
     }
 
     appendWithCross(pointer);
-    main.fillObject(object);
+    main.fillObject(building);
     main.addIndicator(pointer);
 
 
@@ -96,13 +105,19 @@ function locateEmployeeBuilding(location, staffInfo) {
 function locateEmployeeCabinet(cabinetID, staffInfo) {
     floorMap.clear();
 
-    var object = floorMap.getObjectByID(cabinetID);
-    var cords = getAvgCords(object.vertices);
+    var cabinet = floorMap.getObjectByID(cabinetID);
+    var cords = getAvgCords(cabinet.vertices);
 
-    var pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
+    var pointer;
+    if (staffInfo !== undefined) {
+        pointer = createBasePointer(cords.x, cords.y, getStaffInfoText(staffInfo));
+    } else {
+        pointer = createBasePointer(cords.x, cords.y, cabinet.title);
+    }
+
     pointer.data('mapID', location.mapID);
-    pointer.data('object', object);
-    floorMap.fillObject(object);
+    pointer.data('object', cabinet);
+    floorMap.fillObject(cabinet);
     appendWithCross(pointer);
     floorMap.addIndicator(pointer);
 }
@@ -186,6 +201,21 @@ $('#search-container').on('click', '.search-employee-locate', function (event) {
     });
 });
 
+$('#navigation-search-cabinet').click(function() {
+    $.ajax('/getCabinetLocation', {
+        type: "GET",
+        data: {"cabinet": $("#search-input-text").val()},
+        dataType: "json",
+        error: function() {
+            addError("Не удалось найти кабинет");
+        },
+        success: function(location) {
+            navigation.hideNavigationMenu();
+            locateEmployeeBuilding(location);
+        }
+    });
+});
+
 /** Карта этажа */
 
 var floorMapContainer = $('#floor-map');
@@ -204,8 +234,10 @@ function loadFloorMap(id) {
         success: function(data) {
             var img = new Image;
             img.src = data.mapSRC;
-            var MAX_FLOOR_MAP_WIDTH = $(document.body).width() - 190;
-            var MAX_FLOOR_MAP_HEIGHT = $(document.body).height() - 40;
+            var HORIZONTAL_SPACE = 160;
+            var VERTICAL_SPACE = 30;
+            var MAX_FLOOR_MAP_WIDTH = $(document.body).width() - HORIZONTAL_SPACE - 30;
+            var MAX_FLOOR_MAP_HEIGHT = $(document.body).height() - VERTICAL_SPACE - 30;
             $(img).on("load", function () {
                 // Отрисовывает информацию об этаже
                 function renderFloorInfo(data) {
@@ -253,7 +285,10 @@ function loadFloorMap(id) {
                     }
                 }
 
+                $('#floor-list').height(floorMapContainer.height());
                 var refactor = $('#floor-map-container');
+                refactor.width(floorMapContainer.width() + HORIZONTAL_SPACE);
+                refactor.height(floorMapContainer.height() + floorTitle.height() + VERTICAL_SPACE);
                 refactor
                     .css("margin-top", ($(document.body).height() - refactor.height()) / 2 + 'px')
                     .css("margin-left", ($(document.body).width() - refactor.width()) / 2 + 'px');
@@ -378,7 +413,9 @@ var photoIndex;
 
 function loadPhoto() {
     var photosContainer = $('#photos-container');
-    photosContainer.hide().fadeIn(200);
+    if (photosContainer.css("display") !== "none") {
+        photosContainer.hide();
+    }
     photosContainer.children("img").remove();
     var img = new Image;
     img.src = photos[photoIndex];
@@ -424,6 +461,7 @@ function loadPhoto() {
 
         photosContainer.css("left", ($(document.body).width() - photosContainer.width()) / 2 - 30 + "px");
         photosContainer.css("top", ($(document.body).height() - photosContainer.height()) / 2 - 30 + "px");
+        photosContainer.fadeIn(200);
     });
 }
 

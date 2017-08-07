@@ -87,12 +87,35 @@ function navigation() {
 
     /** Переключение между выбором и поиском */
 
-    function showNavigationMenu() {$('#search-container').fadeIn(200);}
-    function hideNavigationMenu() {$('#search-container').fadeOut(200);}
+    function showSearchListOnInput(event) {
+        $("#search-input-text").focus();
+        hideFullList();
+        showSearchList();
+        search();
+        $(window).off("keypress", showSearchListOnInput);
+    }
+
+    function showNavigationMenu() {
+        _navigationContainer.fadeIn(200);
+        $(window).keypress(showSearchListOnInput);
+    }
+
+    function hideNavigationMenu() {
+        $('#search-container').fadeOut(200);
+        $(window).off("keypress", showSearchListOnInput);
+    }
+
+
     function showFullList() {$('#search-full-list-container').css("display", "block");}
     function hideFullList() {$('#search-full-list-container').css("display", "none");}
-    function showSearchList() {$('#search-list-container').css("display", "block");}
-    function hideSearchList() {$('#search-list-container').css("display", "none");}
+    function showSearchList() {
+        $('#search-list-container').css("display", "block");
+        $(window).off("keypress", showSearchListOnInput);
+    }
+    function hideSearchList() {
+        $('#search-list-container').css("display", "none");
+        $(window).keypress(showSearchListOnInput);
+    }
 
     $('#search-close').click(hideNavigationMenu);
 
@@ -202,7 +225,7 @@ function navigation() {
         event.stopPropagation();
     });
 
-    /** Поиск сотрудника/отдела */
+    /** Поиск сотрудника/отдела/кабинета */
 
     // Выводит список сотрудников и отделов с подсвеченной ключевой подстрокой
     function search() {
@@ -260,6 +283,15 @@ function navigation() {
             }
         }
     }
+
+    var cabinetQuestion = $('#navigation-search-cabinet-question');
+    var cabinetHelp = $('#navigation-search-cabinet-help');
+    cabinetQuestion.mouseenter(function() {
+        cabinetHelp.hide().slideDown(200);
+    });
+    cabinetQuestion.mouseleave(function() {
+        cabinetHelp.show().slideUp(200);
+    });
 
     // Выводит список сотрудников при фокусе на строку поиска
     var searchInput = $('#search-input-text');
