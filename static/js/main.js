@@ -287,7 +287,7 @@ function loadFloorMap(id) {
 
                 $('#floor-list').height(floorMapContainer.height());
                 var refactor = $('#floor-map-container');
-                refactor.width(floorMapContainer.width() + HORIZONTAL_SPACE);
+                refactor.width(floorMapContainer.width() + 2 * floorMapContainer.css("left").split("px")[0] - 20 + HORIZONTAL_SPACE);
                 refactor.height(floorMapContainer.height() + floorTitle.height() + VERTICAL_SPACE);
                 refactor
                     .css("margin-top", ($(document.body).height() - refactor.height()) / 2 + 'px')
