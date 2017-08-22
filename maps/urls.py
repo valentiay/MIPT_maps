@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^getCabinetLocation$', get_cabinet_location, name="getCabinetLocation"),
     url(r'^phonebook$', phonebook, name="phoneBook"),
     url(r'^addObject$', edit_object, name="addObject"),
-    url(r'^deleteObject', delete_object, name="deleteObject"),
+    url(r'^deleteObject$', delete_object, name="deleteObject"),
+    url(r'^iframe$', iframe, name="iframe"),
 ]

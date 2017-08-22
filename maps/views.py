@@ -107,3 +107,7 @@ def delete_object(request):
         return HttpResponse("OK")
     except Object.DoesNotExist:
         return HttpResponse(status=406)
+
+
+def iframe(request):
+    return HttpResponse(render(request, "iframe.html"))

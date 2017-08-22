@@ -238,7 +238,7 @@ function loadFloorMap(id) {
             var VERTICAL_SPACE = 30;
             var MAX_FLOOR_MAP_WIDTH = $(document.body).width() - HORIZONTAL_SPACE - 30;
             var MAX_FLOOR_MAP_HEIGHT = $(document.body).height() - VERTICAL_SPACE - 30;
-            $(img).on("load", function () {
+            $(img).on("load", function() {
                 // Отрисовывает информацию об этаже
                 function renderFloorInfo(data) {
                     var floorList = $('#floor-list');
@@ -295,6 +295,9 @@ function loadFloorMap(id) {
                 floorMap.renderMap(data, width, height);
                 floorMapContainer.trigger('floor-map-ready');
             });
+            $(img).on("error", function() {
+                floorMapContainer.trigger('floor-map-error');
+            });
         }
     });
 }
@@ -327,11 +330,20 @@ mainContainer.on('click', '.pointer-locate', function(event) {
 
     loadFloorMap(container.data('mapID'));
 
-    $('#floor-map').bind('floor-map-ready', function() {
+    floorMapContainer.bind('floor-map-ready', function() {
         $(document.body).children(".floor-loader-container").remove();
         locateEmployeeCabinet(container.data('cabinetID'), container.data('staffInfo'));
         activateFloorMap();
-        $('#floor-map').unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-error');
+    });
+
+    floorMapContainer.bind('floor-map-error', function() {
+        $(document.body).children(".floor-loader-container").remove();
+        main.activate();
+        floorMapContainer.unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-error');
+        addError("Не удалось загрузить карту");
     });
 });
 
@@ -348,10 +360,19 @@ mainContainer.on('click', '.pointer-inside-map', function(event){
 
     loadFloorMap(container.data('mapID'));
 
-    $('#floor-map').bind("floor-map-ready", function() {
+    floorMapContainer.bind("floor-map-ready", function() {
         $(document.body).children(".floor-loader-container").remove();
         activateFloorMap();
-        $('#floor-map').unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-error');
+    });
+
+    floorMapContainer.bind('floor-map-error', function() {
+        $(document.body).children(".floor-loader-container").remove();
+        main.activate();
+        floorMapContainer.unbind('floor-map-ready');
+        floorMapContainer.unbind('floor-map-error');
+        addError("Не удалось загрузить карту");
     });
 });
 
@@ -421,6 +442,7 @@ function loadPhoto() {
     img.src = photos[photoIndex];
     var MAX_PHOTO_WIDTH = $(document.body).width() - 80;
     var MAX_PHOTO_HEIGHT = $(document.body).height() - 80;
+
     $(img).on("load", function () {
         var width = img.width;
         var height = img.height;
@@ -462,6 +484,13 @@ function loadPhoto() {
         photosContainer.css("left", ($(document.body).width() - photosContainer.width()) / 2 - 30 + "px");
         photosContainer.css("top", ($(document.body).height() - photosContainer.height()) / 2 - 30 + "px");
         photosContainer.fadeIn(200);
+    });
+    $(img).on("error", function() {
+        photos = undefined;
+        photoIndex = undefined;
+        $('#photos-container').hide();
+        main.activate();
+        addError("Не удалось загрузить фотографию");
     });
 }
 
