@@ -205,17 +205,15 @@ function map(container) {
     var oldY;
 
      // Функция для смещения карты при движении мыши
-    function moveProcessing(event) {
+    function moveProcessing(x, y) {
         if (!_container.data("isActive"))
             return;
         _blockClick = true;
         clearTimeout(_clickDelay);
         _clickDelay = 0;
 
-        var clickX = event.pageX;
-        var clickY = event.pageY;
-        var dx = oldX - clickX;
-        var dy = oldY - clickY;
+        var dx = oldX - x;
+        var dy = oldY - y;
 
         var newOriginCords = toCords(dx, dy);
         var newCornerCords = toCords(_container.width() + dx, _container.height() + dy);
@@ -226,20 +224,31 @@ function map(container) {
 
         changePosition(dx, dy);
 
-        oldX = clickX;
-        oldY = clickY;
+        oldX = x;
+        oldY = y;
+    }
+
+    function startMove(x, y) {
+        if (!_container.data("isActive"))
+            return;
+        oldX = x;
+        oldY = y;
+        // Включение обработки перемещения мыши
+        _container.on('mousemove', function(event) {
+            moveProcessing(event.pageX, event.pageY);
+        });
+        _container.on('touchmove', function(event) {
+            moveProcessing(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+        });
     }
 
     // Обработчик события нажатия кнопки
-    _container.mousedown(function (event) {
-        if (!_container.data("isActive"))
-            return;
-        oldX = event.pageX;
-        oldY = event.pageY;
-        // Включение обработки перемещения мыши
-        _container.on('mousemove', moveProcessing);
+    _container.on('mousedown', function(event) {
+        startMove(event.pageX, event.pageY);
     });
-
+    _container.on('touchstart', function(event) {
+        startMove(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+    });
 
     // Функция для выключения обработки перемещения мыши
     function moveInterruption() {
@@ -253,7 +262,8 @@ function map(container) {
 
     // Обработчики событий
     $(document.body).mouseup(moveInterruption);
-
+    $(document.body).on('touchend', moveInterruption);
+    $(document.body).on('touchcancel', moveInterruption);
     /** Работа с холстом */
 
     function clear() {
@@ -324,7 +334,6 @@ function map(container) {
     _container.on("click", ".map-block", processClick);
 
     function getObjectByID(objectId) {
-        // TODO
         var object = _objects[objectId];
         if (object === undefined) {
             console.error('Wrong object ID');

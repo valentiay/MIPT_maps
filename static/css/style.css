@@ -713,6 +713,16 @@ body{
     background-image: url(/static/img/next.png);
 }
 
+@media (max-width: 800px) {
+    #floor-title {
+      font-size: 0.7em;
+    }
+
+    #search-left-col, #search-right-col, #search-mid-col {
+        width: 100%;
+    }
+}
+
 /****/
 
 #manage-map {
